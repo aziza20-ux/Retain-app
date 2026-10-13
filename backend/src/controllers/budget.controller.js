@@ -7,14 +7,12 @@ import {
   budgetQuerySchema,
 } from "../schemas/budget.schema.js";
 
-// Normalize any date to midnight UTC on the first day of its month.
-// The schema transforms the input to a Date — this ensures consistent storage.
+
 const normalizeToMonthStart = (date) => {
   return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), 1));
 };
 
-// Calculate spending totals and status for a budget record.
-// Uses Prisma Decimal arithmetic to avoid floating-point errors.
+
 const withCalculations = async (budget) => {
   const monthStart = budget.month;
   const monthEnd = new Date(

@@ -3,6 +3,9 @@ import express from "express";
 import helmet from "helmet";
 import cors from "cors";
 import authRouter from "./routes/auth.routes.js";
+import budgetRouter from "./routes/budget.routes.js";
+import categoryRouter from "./routes/category.routes.js";
+import expenseRouter from "./routes/expense.routes.js";
 
 const app = express();
 
@@ -13,6 +16,9 @@ app.use(express.json());
  const PORT = Number(process.env.PORT) || 3001;
 
 app.use("/api/auth", authRouter);
+app.use("/api/budgets", budgetRouter);
+app.use("/api/categories", categoryRouter);
+app.use("/api/expenses", expenseRouter);
 
 app.use((req, res) => {
   res.status(404).json({ message: "Route not found" });
