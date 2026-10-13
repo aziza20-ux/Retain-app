@@ -10,12 +10,18 @@ app.use(helmet());
 app.use(cors());
 app.use(express.json());
 
- const PORT = Number(process.env.PORT) || 3000;
+ const PORT = Number(process.env.PORT) || 3001;
 
 app.use("/api/auth", authRouter);
 
 app.use((req, res) => {
   res.status(404).json({ message: "Route not found" });
+});
+
+// Global error handler — must have 4 parameters for Express to treat it as an error handler
+app.use((err, req, res, next) => {
+  console.error(err);
+  res.status(err.status ?? 500).json({ message: err.message ?? "Internal server error" });
 });
 
   app.listen(PORT, () => {
