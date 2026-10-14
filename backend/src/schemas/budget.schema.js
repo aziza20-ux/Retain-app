@@ -4,14 +4,10 @@ import { z } from "zod";
 
 
 const amountField = z
-  .union([z.string(), z.number()])
-  .transform((val) => Number(val))
-  .pipe(
-    z
-      .number()
-      .positive("Budget amount must be a positive number")
-      .finite("Budget amount must be a finite number")
-  );
+  .coerce
+  .number({ invalid_type_error: "Amount must be a number" })
+  .positive("Budget amount must be a positive number")
+  .finite("Budget amount must be a finite number");
 
 const monthField = z
   .string()

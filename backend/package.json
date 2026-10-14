@@ -4,7 +4,8 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon --exec \"node --experimental-strip-types\" src/app.js",
-    "start": "node --experimental-strip-types src/app.js"
+    "start": "node --experimental-strip-types src/app.js",
+    "seed": "node --experimental-strip-types prisma/seed.js"
   },
   "keywords": [],
   "type": "module",
