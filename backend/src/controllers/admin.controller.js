@@ -1,7 +1,7 @@
 import { Decimal } from "@prisma/client/runtime/client";
 import { prisma } from "../config/prisma.config.js";
 
-// Safe user projection — never exposes passwordHash or internal fields.
+
 const safeUserFields = {
   id: true,
   name: true,
@@ -10,36 +10,22 @@ const safeUserFields = {
   createdAt: true,
 };
 
-// Safe expense owner projection used inside recentExpenses.
+
 const safeOwnerFields = {
   id: true,
   name: true,
   email: true,
 };
 
-/**
- * GET /api/admin/insights
- *
- * Returns all nine platform-wide admin dashboard metrics in a single response.
- * Requires: isAuthenticated + isAdmin middleware (enforced in the route).
- *
- * Metric 4 interpretation: "expenses recorded during the current month" uses
- * the expense `date` field (when the spending occurred), consistent with how
- * the budget calculations use `date` throughout the rest of the application.
- * This matches the assignment's intent of tracking spending activity per month.
- *
- * All independent queries run concurrently via Promise.all to avoid sequential
- * round-trips. Category groupBy results are merged with the full category list
- * so that categories with zero expenses are included in the response.
- */
+
 export const getInsights = async (req, res, next) => {
   try {
-    // ── Current-month UTC boundaries (consistent with budget.controller.js) ──
+    
     const now = new Date();
     const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
     const monthEnd   = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1));
 
-    // ── Run all independent queries in parallel ────────────────────────────
+    
     const [
       totalUsers,
       totalExpenses,
@@ -93,8 +79,7 @@ export const getInsights = async (req, res, next) => {
       }),
     ]);
 
-    // ── Assemble per-category stats ────────────────────────────────────────
-    // Build a lookup map from the groupBy results.
+   
     const groupByMap = new Map(
       categoryGroupBy.map((row) => [
         row.categoryId,
