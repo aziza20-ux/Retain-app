@@ -2,16 +2,17 @@ interface SummaryCardProps {
   title: string;
   amount: number;
   variant?: 'default' | 'dark' | 'income' | 'expense';
+  subtitle?: string;
 }
 
-export default function SummaryCard({ title, amount, variant = 'default' }: SummaryCardProps) {
+export default function SummaryCard({ title, amount, variant = 'default', subtitle }: SummaryCardProps) {
   const base = 'rounded-xl p-5 shadow-sm';
 
   const styles: Record<string, string> = {
-    default:  `${base} bg-white text-[#0B2545]`,
-    dark:     `${base} bg-[#1A1A1A] text-white`,
-    income:   `${base} bg-white text-[#0B2545] border-l-4 border-[#198754]`,
-    expense:  `${base} bg-white text-[#0B2545] border-l-4 border-[#DC3545]`,
+    default: `${base} bg-white text-[#0B2545]`,
+    dark:    `${base} bg-[#1A1A1A] text-white`,
+    income:  `${base} bg-white text-[#0B2545] border-l-4 border-[#198754]`,
+    expense: `${base} bg-white text-[#0B2545] border-l-4 border-[#DC3545]`,
   };
 
   const amountColor: Record<string, string> = {
@@ -29,6 +30,11 @@ export default function SummaryCard({ title, amount, variant = 'default' }: Summ
       <p className={`text-2xl font-bold ${amountColor[variant]}`}>
         ${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
       </p>
+      {subtitle && (
+        <p className={`text-xs mt-1 ${variant === 'dark' ? 'text-gray-500' : 'text-[#6C757D]'}`}>
+          {subtitle}
+        </p>
+      )}
     </div>
   );
 }
