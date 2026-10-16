@@ -8,9 +8,9 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  password: string; // stored as plain text for mock only
   role: Role;
-  createdAt: string; // ISO timestamp of registration
+  createdAt: string;
+  updatedAt?: string;
 }
 
 export interface Category {
@@ -29,15 +29,20 @@ export interface Expense {
   userId: string;
   categoryId: string;
   createdAt: string;
+  category?: Category;
 }
 
 export interface Budget {
   id: string;
   amount: number;
-  month: string; // ISO first-of-month string e.g. "2025-07-01T00:00:00.000Z"
+  month: string;
   userId: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
+// Backend returns totalSpent and remaining as serialized Decimal strings.
+// The frontend converts them to numbers where needed.
 export interface BudgetWithCalc extends Budget {
   totalSpent: number;
   remaining: number;
