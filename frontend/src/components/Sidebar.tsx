@@ -3,23 +3,24 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const userNavItems = [
-  { to: '/dashboard',           label: 'Overview',           icon: '▦' },
-  { to: '/expenses',            label: 'Transactions',       icon: '↕' },
-  { to: '/budgets',             label: 'Budgets',            icon: '◎' },
+  { to: '/dashboard',        label: 'Overview',          icon: '▦' },
+  { to: '/expenses',         label: 'Transactions',      icon: '↕' },
+  { to: '/budgets',          label: 'Budgets',           icon: '◎' },
 ];
 
 const adminNavItems = [
-  { to: '/admin',               label: 'Dashboard',          icon: '▦' },
-  { to: '/admin/categories',    label: 'Manage Categories',  icon: '⊞' },
+  { to: '/admin',            label: 'Dashboard',         icon: '▦' },
+  { to: '/admin/categories', label: 'Manage Categories', icon: '⊞' },
 ];
 
 export default function Sidebar() {
-  const [open, setOpen] = useState(false);
+  const [mobileOpen,   setMobileOpen]   = useState(false);
+  const [collapsed,    setCollapsed]    = useState(false);
   const { logout, role, user } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    setOpen(false);
+    setMobileOpen(false);
     logout();
     navigate('/login');
   };
@@ -31,8 +32,8 @@ export default function Sidebar() {
       {/* Mobile top bar */}
       <div className="md:hidden flex items-center justify-between px-4 py-3 bg-[#2D2D2D]">
         <span className="text-white font-bold text-lg tracking-wide">Retain</span>
-        <button onClick={() => setOpen(!open)} className="text-white text-2xl leading-none">
-          {open ? '✕' : '☰'}
+        <button onClick={() => setMobileOpen(!mobileOpen)} className="text-white text-2xl leading-none">
+          {mobileOpen ? '✕' : '☰'}
         </button>
       </div>
 
@@ -40,19 +41,29 @@ export default function Sidebar() {
       <aside
         className={`
           fixed md:static inset-y-0 left-0 z-40
-          w-56 bg-[#2D2D2D] flex flex-col
-          transform transition-transform duration-200
-          ${open ? 'translate-x-0' : '-translate-x-full'}
+          bg-[#2D2D2D] flex flex-col
+          transform transition-all duration-200
+          ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}
           md:translate-x-0
+          ${collapsed ? 'w-14' : 'w-56'}
         `}
       >
-        {/* Brand */}
-        <div className="px-6 py-6 hidden md:block">
-          <span className="text-white font-bold text-xl tracking-wide">Retain</span>
+        {/* Brand + collapse toggle */}
+        <div className={`flex items-center py-5 hidden md:flex ${collapsed ? 'justify-center px-0' : 'justify-between px-4'}`}>
+          {!collapsed && (
+            <span className="text-white font-bold text-xl tracking-wide">Retain</span>
+          )}
+          <button
+            onClick={() => setCollapsed(c => !c)}
+            title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            className="text-[#9CA3AF] hover:text-white transition-colors text-sm leading-none"
+          >
+            {collapsed ? '»' : '«'}
+          </button>
         </div>
 
         {/* User info */}
-        {user && (
+        {user && !collapsed && (
           <div className="px-4 pb-3 hidden md:block">
             <p className="text-xs text-[#9CA3AF] truncate">{user.name}</p>
             {role === 'ADMIN' && (
@@ -62,43 +73,47 @@ export default function Sidebar() {
         )}
 
         {/* Nav */}
-        <nav className="flex-1 px-3 mt-2 space-y-1">
+        <nav className="flex-1 px-2 mt-2 space-y-1">
           {navItems.map(({ to, label, icon }) => (
             <NavLink
               key={to}
               to={to}
-              onClick={() => setOpen(false)}
+              onClick={() => setMobileOpen(false)}
+              title={collapsed ? label : undefined}
               className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                `flex items-center gap-3 px-2 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                  collapsed ? 'justify-center' : ''
+                } ${
                   isActive
                     ? 'bg-white text-[#0B2545]'
                     : 'text-[#9CA3AF] hover:text-white hover:bg-white/10'
                 }`
               }
             >
-              <span className="text-base">{icon}</span>
-              {label}
+              <span className="text-base shrink-0">{icon}</span>
+              {!collapsed && <span>{label}</span>}
             </NavLink>
           ))}
         </nav>
 
         {/* Logout */}
-        <div className="px-3 pb-6">
+        <div className="px-2 pb-6">
           <button
             onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-[#9CA3AF] hover:text-white hover:bg-white/10 transition-colors"
+            title={collapsed ? 'Logout' : undefined}
+            className={`w-full flex items-center gap-3 px-2 py-2.5 rounded-lg text-sm font-medium text-[#9CA3AF] hover:text-white hover:bg-white/10 transition-colors ${collapsed ? 'justify-center' : ''}`}
           >
-            <span className="text-base">⎋</span>
-            Logout
+            <span className="text-base shrink-0">⎋</span>
+            {!collapsed && <span>Logout</span>}
           </button>
         </div>
       </aside>
 
       {/* Mobile overlay */}
-      {open && (
+      {mobileOpen && (
         <div
           className="fixed inset-0 z-30 bg-black/50 md:hidden"
-          onClick={() => setOpen(false)}
+          onClick={() => setMobileOpen(false)}
         />
       )}
     </>
