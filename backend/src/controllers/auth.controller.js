@@ -71,6 +71,18 @@ export const login = async (req, res, next) => {
   }
 };
 
+// POST /auth/logout
+// JWT is stateless — the server cannot invalidate a token that has already been
+// issued. This endpoint exists so the frontend has a consistent API call to
+// clear its React Context authentication state. The client MUST discard the
+// token from memory on receipt of this response. The token remains
+// cryptographically valid until its 7-day expiry; for this summative project
+// that limitation is acceptable and is documented here.
+export const logout = (req, res) => {
+  // req.user is already verified by isAuthenticated middleware.
+  return res.status(200).json({ message: "Logged out successfully" });
+};
+
 // GET /auth/me  — requires isAuthenticated middleware
 export const getMe = async (req, res, next) => {
   try {
