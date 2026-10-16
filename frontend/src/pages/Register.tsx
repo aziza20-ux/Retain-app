@@ -1,14 +1,18 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, Navigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 export default function Register() {
+  const { register, isAuthenticated } = useAuth();
   const navigate = useNavigate();
-  const [name, setName]         = useState('');
-  const [email, setEmail]       = useState('');
+  const [name,     setName]     = useState('');
+  const [email,    setEmail]    = useState('');
   const [password, setPassword] = useState('');
-  const [confirm, setConfirm]   = useState('');
-  const [error, setError]       = useState('');
-  const [success, setSuccess]   = useState(false);
+  const [confirm,  setConfirm]  = useState('');
+  const [error,    setError]    = useState('');
+  const [success,  setSuccess]  = useState(false);
+
+  if (isAuthenticated) return <Navigate to="/dashboard" replace />;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,7 +29,8 @@ export default function Register() {
       setError('Passwords do not match.');
       return;
     }
-    // Simulated registration — no API call
+    const err = register(name.trim(), email.trim(), password);
+    if (err) { setError(err); return; }
     setSuccess(true);
     setTimeout(() => navigate('/login'), 1500);
   };
@@ -37,9 +42,7 @@ export default function Register() {
         <p className="text-sm text-[#6C757D] mb-6">Start tracking your expenses today</p>
 
         {error && (
-          <div className="mb-4 px-4 py-3 rounded-lg bg-red-50 text-[#DC3545] text-sm">
-            {error}
-          </div>
+          <div className="mb-4 px-4 py-3 rounded-lg bg-red-50 text-[#DC3545] text-sm">{error}</div>
         )}
         {success && (
           <div className="mb-4 px-4 py-3 rounded-lg bg-[#CFF4FC] text-[#0B2545] text-sm">
@@ -51,9 +54,7 @@ export default function Register() {
           <div>
             <label className="block text-sm font-medium text-[#0B2545] mb-1">Full Name</label>
             <input
-              type="text"
-              value={name}
-              onChange={e => setName(e.target.value)}
+              type="text" value={name} onChange={e => setName(e.target.value)}
               placeholder="Alex Johnson"
               className="w-full px-3 py-2.5 border border-[#DEE2E6] rounded-lg text-sm focus:outline-none focus:border-[#0B2545] transition-colors"
             />
@@ -61,9 +62,7 @@ export default function Register() {
           <div>
             <label className="block text-sm font-medium text-[#0B2545] mb-1">Email</label>
             <input
-              type="email"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
+              type="email" value={email} onChange={e => setEmail(e.target.value)}
               placeholder="you@example.com"
               className="w-full px-3 py-2.5 border border-[#DEE2E6] rounded-lg text-sm focus:outline-none focus:border-[#0B2545] transition-colors"
             />
@@ -71,9 +70,7 @@ export default function Register() {
           <div>
             <label className="block text-sm font-medium text-[#0B2545] mb-1">Password</label>
             <input
-              type="password"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
+              type="password" value={password} onChange={e => setPassword(e.target.value)}
               placeholder="Min. 8 characters"
               className="w-full px-3 py-2.5 border border-[#DEE2E6] rounded-lg text-sm focus:outline-none focus:border-[#0B2545] transition-colors"
             />
@@ -81,9 +78,7 @@ export default function Register() {
           <div>
             <label className="block text-sm font-medium text-[#0B2545] mb-1">Confirm Password</label>
             <input
-              type="password"
-              value={confirm}
-              onChange={e => setConfirm(e.target.value)}
+              type="password" value={confirm} onChange={e => setConfirm(e.target.value)}
               placeholder="••••••••"
               className="w-full px-3 py-2.5 border border-[#DEE2E6] rounded-lg text-sm focus:outline-none focus:border-[#0B2545] transition-colors"
             />
@@ -98,9 +93,7 @@ export default function Register() {
 
         <p className="mt-5 text-center text-sm text-[#6C757D]">
           Already have an account?{' '}
-          <Link to="/login" className="text-[#0B2545] font-medium hover:underline">
-            Sign in
-          </Link>
+          <Link to="/login" className="text-[#0B2545] font-medium hover:underline">Sign in</Link>
         </p>
       </div>
     </div>
