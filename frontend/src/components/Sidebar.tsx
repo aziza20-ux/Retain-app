@@ -1,20 +1,30 @@
 import { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
-const navItems = [
-  { to: '/dashboard', label: 'Overview',     icon: '▦' },
-  { to: '/expenses',  label: 'Transactions', icon: '↕' },
-  { to: '/budgets',   label: 'Budgets',      icon: '◎' },
+const userNavItems = [
+  { to: '/dashboard',           label: 'Overview',           icon: '▦' },
+  { to: '/expenses',            label: 'Transactions',       icon: '↕' },
+  { to: '/budgets',             label: 'Budgets',            icon: '◎' },
+];
+
+const adminNavItems = [
+  { to: '/admin',               label: 'Dashboard',          icon: '▦' },
+  { to: '/admin/categories',    label: 'Manage Categories',  icon: '⊞' },
 ];
 
 export default function Sidebar() {
   const [open, setOpen] = useState(false);
+  const { logout, role, user } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => {
     setOpen(false);
+    logout();
     navigate('/login');
   };
+
+  const navItems = role === 'ADMIN' ? adminNavItems : userNavItems;
 
   return (
     <>
@@ -40,6 +50,16 @@ export default function Sidebar() {
         <div className="px-6 py-6 hidden md:block">
           <span className="text-white font-bold text-xl tracking-wide">Retain</span>
         </div>
+
+        {/* User info */}
+        {user && (
+          <div className="px-4 pb-3 hidden md:block">
+            <p className="text-xs text-[#9CA3AF] truncate">{user.name}</p>
+            {role === 'ADMIN' && (
+              <span className="text-xs font-medium text-yellow-400">Admin</span>
+            )}
+          </div>
+        )}
 
         {/* Nav */}
         <nav className="flex-1 px-3 mt-2 space-y-1">
