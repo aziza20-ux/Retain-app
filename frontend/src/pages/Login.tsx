@@ -3,24 +3,30 @@ import { useNavigate, Link, Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 export default function Login() {
-  const { login, loginRole, isAuthenticated, role } = useAuth();
+  const { login, isAuthenticated, isLoading, role } = useAuth();
   const navigate = useNavigate();
   const [email,    setEmail]    = useState('');
   const [password, setPassword] = useState('');
   const [error,    setError]    = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
+  if (isLoading) return null;
   if (isAuthenticated) return <Navigate to={role === 'ADMIN' ? '/admin' : '/dashboard'} replace />;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     if (!email.trim() || !password.trim()) {
       setError('Email and password are required.');
       return;
     }
-    const err = login(email.trim(), password);
+    setSubmitting(true);
+    const err = await login(email.trim(), password);
+    setSubmitting(false);
     if (err) { setError(err); return; }
-    navigate(loginRole(email.trim()) === 'ADMIN' ? '/admin' : '/dashboard');
+    // role is updated after login — read from auth context after state settles via navigate
+    // The Navigate guard above will handle the redirect on next render.
+    navigate(role === 'ADMIN' ? '/admin' : '/dashboard');
   };
 
   return (
@@ -28,11 +34,6 @@ export default function Login() {
       <div className="w-full max-w-sm bg-white rounded-2xl shadow-sm p-8">
         <h1 className="text-2xl font-bold text-[#0B2545] mb-1">Welcome back</h1>
         <p className="text-sm text-[#6C757D] mb-6">Sign in to your Retain account</p>
-
-        <p className="text-xs text-[#6C757D] mb-4 bg-[#F7F8FA] rounded-lg px-3 py-2">
-          Demo — user: <strong>alex@example.com</strong> / <strong>password123</strong><br />
-          Admin: <strong>admin@retain.app</strong> / <strong>Admin@1234</strong>
-        </p>
 
         {error && (
           <div className="mb-4 px-4 py-3 rounded-lg bg-red-50 text-[#DC3545] text-sm">{error}</div>
@@ -57,9 +58,10 @@ export default function Login() {
           </div>
           <button
             type="submit"
-            className="w-full py-2.5 bg-[#0B2545] text-white rounded-lg text-sm font-medium hover:bg-[#0d2e56] transition-colors"
+            disabled={submitting}
+            className="w-full py-2.5 bg-[#0B2545] text-white rounded-lg text-sm font-medium hover:bg-[#0d2e56] transition-colors disabled:opacity-60"
           >
-            Sign In
+            {submitting ? 'Signing in…' : 'Sign In'}
           </button>
         </form>
 

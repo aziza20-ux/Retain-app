@@ -1,56 +1,73 @@
-import { createContext, useContext, useState, type ReactNode } from 'react';
+import {
+  createContext, useContext, useState, useEffect, type ReactNode,
+} from 'react';
 import type { User, Role } from '../types';
-import { mockUsers } from '../data/mockData';
+import { authApi, tokenStore, userRole } from '../api/auth.api';
+import { getErrorMessage } from '../api/axios';
 
 interface AuthContextValue {
   user: User | null;
   role: Role | null;
   isAuthenticated: boolean;
-  users: User[];
-  login: (email: string, password: string) => string | null;
-  loginRole: (email: string) => Role | null; // returns the role for a given email, or null
-  register: (name: string, email: string, password: string) => string | null;
-  logout: () => void;
+  isLoading: boolean;           // true while restoring session on first load
+  login:    (email: string, password: string) => Promise<string | null>;
+  register: (name: string, email: string, password: string) => Promise<string | null>;
+  logout:   () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  // Extra users created via register live here alongside the seed users
-  const [users, setUsers] = useState<User[]>(mockUsers);
+  const [user,      setUser]      = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const login = (email: string, password: string): string | null => {
-    const found = users.find(
-      u => u.email.toLowerCase() === email.toLowerCase() && u.password === password,
-    );
-    if (!found) return 'Invalid email or password.';
-    setUser(found);
-    return null;
+  // Restore session from localStorage token on first mount.
+  useEffect(() => {
+    const token = tokenStore.get();
+    if (!token) { setIsLoading(false); return; }
+
+    authApi.getMe()
+      .then(res => setUser(res.data.user))
+      .catch(() => { tokenStore.clear(); setUser(null); })
+      .finally(() => setIsLoading(false));
+  }, []);
+
+  const login = async (email: string, password: string): Promise<string | null> => {
+    try {
+      const res = await authApi.login(email, password);
+      tokenStore.save(res.data.token);
+      setUser(res.data.user);
+      return null;
+    } catch (err) {
+      return getErrorMessage(err);
+    }
   };
 
-  const register = (name: string, email: string, password: string): string | null => {
-    const exists = users.some(u => u.email.toLowerCase() === email.toLowerCase());
-    if (exists) return 'An account with that email already exists.';
-    const newUser: User = {
-      id: `user-${Date.now()}`,
-      name,
-      email,
-      password,
-      role: 'USER',
-      createdAt: new Date().toISOString(),
-    };
-    setUsers(prev => [...prev, newUser]);
-    return null;
+  const register = async (name: string, email: string, password: string): Promise<string | null> => {
+    try {
+      await authApi.register(name, email, password);
+      return null;
+    } catch (err) {
+      return getErrorMessage(err);
+    }
   };
 
-  const loginRole = (email: string): Role | null =>
-    users.find(u => u.email.toLowerCase() === email.toLowerCase())?.role ?? null;
-
-  const logout = () => setUser(null);
+  const logout = async (): Promise<void> => {
+    try { await authApi.logout(); } catch { /* ignore network errors on logout */ }
+    tokenStore.clear();
+    setUser(null);
+  };
 
   return (
-    <AuthContext.Provider value={{ user, role: user?.role ?? null, isAuthenticated: user !== null, users, login, loginRole, register, logout }}>
+    <AuthContext.Provider value={{
+      user,
+      role: userRole(user),
+      isAuthenticated: user !== null,
+      isLoading,
+      login,
+      register,
+      logout,
+    }}>
       {children}
     </AuthContext.Provider>
   );

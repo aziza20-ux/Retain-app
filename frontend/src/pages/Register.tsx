@@ -3,7 +3,7 @@ import { useNavigate, Link, Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 export default function Register() {
-  const { register, isAuthenticated } = useAuth();
+  const { register, isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
   const [name,     setName]     = useState('');
   const [email,    setEmail]    = useState('');
@@ -11,10 +11,12 @@ export default function Register() {
   const [confirm,  setConfirm]  = useState('');
   const [error,    setError]    = useState('');
   const [success,  setSuccess]  = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
+  if (isLoading) return null;
   if (isAuthenticated) return <Navigate to="/dashboard" replace />;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     if (!name.trim() || !email.trim() || !password.trim() || !confirm.trim()) {
@@ -29,7 +31,9 @@ export default function Register() {
       setError('Passwords do not match.');
       return;
     }
-    const err = register(name.trim(), email.trim(), password);
+    setSubmitting(true);
+    const err = await register(name.trim(), email.trim(), password);
+    setSubmitting(false);
     if (err) { setError(err); return; }
     setSuccess(true);
     setTimeout(() => navigate('/login'), 1500);
@@ -85,9 +89,10 @@ export default function Register() {
           </div>
           <button
             type="submit"
-            className="w-full py-2.5 bg-[#0B2545] text-white rounded-lg text-sm font-medium hover:bg-[#0d2e56] transition-colors"
+            disabled={submitting}
+            className="w-full py-2.5 bg-[#0B2545] text-white rounded-lg text-sm font-medium hover:bg-[#0d2e56] transition-colors disabled:opacity-60"
           >
-            Create Account
+            {submitting ? 'Creating account…' : 'Create Account'}
           </button>
         </form>
 
