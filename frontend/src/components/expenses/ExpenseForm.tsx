@@ -59,13 +59,16 @@ export default function ExpenseForm({ expense, categories, onSave, onCancel, sav
   const [form,      setForm]      = useState<FormState>(() => buildForm(expense, defaultCategoryId));
   const [formError, setFormError] = useState('');
 
+  const today = new Date().toISOString().slice(0, 10);
+
   const handleSave = () => {
     setFormError('');
-    if (!form.title.trim())          { setFormError('Title is required.');                return; }
+    if (!form.title.trim())          { setFormError('Title is required.');                      return; }
     const amt = parseFloat(form.amount);
-    if (isNaN(amt) || amt <= 0)      { setFormError('Enter a valid positive amount.');    return; }
-    if (!form.date)                  { setFormError('Date is required.');                 return; }
-    if (!form.categoryId)            { setFormError('Category is required.');             return; }
+    if (isNaN(amt) || amt <= 0)      { setFormError('Enter a valid positive amount.');           return; }
+    if (!form.date)                  { setFormError('Date is required.');                        return; }
+    if (form.date > today)           { setFormError('Expense date cannot be in the future.');   return; }
+    if (!form.categoryId)            { setFormError('Category is required.');                   return; }
 
     onSave({
       title:         form.title.trim(),
@@ -117,6 +120,7 @@ export default function ExpenseForm({ expense, categories, onSave, onCancel, sav
             {field('Date',
               <input
                 type="date" value={form.date}
+                max={today}
                 onChange={e => setForm(f => ({ ...f, date: e.target.value }))}
                 className={inputCls}
               />

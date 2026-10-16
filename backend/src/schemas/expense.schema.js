@@ -54,7 +54,15 @@ export const createExpenseSchema = z
     categoryId: categoryIdField,
     notes: notesField,
   })
-  .strict();
+  .strict()
+  .refine(
+    (data) => {
+      const expenseDay = data.date.toISOString().slice(0, 10);
+      const todayDay   = new Date().toISOString().slice(0, 10);
+      return expenseDay <= todayDay;
+    },
+    { message: "Expense date cannot be in the future", path: ["date"] }
+  );
 
 
 
