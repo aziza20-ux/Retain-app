@@ -19,6 +19,8 @@ export default function Expenses() {
   const [editing,   setEditing]   = useState<Expense | null>(null);
   const [detailExp, setDetailExp] = useState<Expense | null>(null);
   const [deleteId,  setDeleteId]  = useState<string | null>(null);
+  const [saving,    setSaving]    = useState(false);
+  const [formError, setFormError] = useState('');
 
   // ── Filter + sort (driven entirely by Redux state) ────────────────────────
   const userExpenses = expenses.filter(e => e.userId === userId);
@@ -50,28 +52,35 @@ export default function Expenses() {
     setShowForm(true);
   };
 
-  const handleSave = (data: ExpenseFormData) => {
-    if (editing) {
-      updateExpense({ ...editing, ...data });
-    } else {
-      addExpense({
-        id: `exp-${Date.now()}`,
-        userId,
-        createdAt: new Date().toISOString(),
-        ...data,
-      });
+  const handleSave = async (data: ExpenseFormData) => {
+    setSaving(true);
+    setFormError('');
+    try {
+      if (editing) {
+        await updateExpense(editing.id, data);
+      } else {
+        await addExpense(data);
+      }
+      setShowForm(false);
+      setEditing(null);
+    } catch (err: unknown) {
+      setFormError(err instanceof Error ? err.message : 'Failed to save expense.');
+    } finally {
+      setSaving(false);
     }
-    setShowForm(false);
-    setEditing(null);
   };
 
   const handleCancelForm = () => {
     setShowForm(false);
     setEditing(null);
+    setFormError('');
   };
 
-  const confirmDelete = () => {
-    if (deleteId) deleteExpense(deleteId);
+  const confirmDelete = async () => {
+    if (!deleteId) return;
+    try {
+      await deleteExpense(deleteId);
+    } catch { /* ignore */ }
     setDeleteId(null);
   };
 
@@ -121,6 +130,8 @@ export default function Expenses() {
           categories={categories}
           onSave={handleSave}
           onCancel={handleCancelForm}
+          saving={saving}
+          error={formError}
         />
       )}
 

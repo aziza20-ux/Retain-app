@@ -3,26 +3,25 @@ import Sidebar    from '../components/Sidebar';
 import BudgetCard from '../components/budgets/BudgetCard';
 import { useAppData } from '../context/AppDataContext';
 import { useAuth }    from '../context/AuthContext';
-import { calcBudget, toMonthKey, monthKeyToIso } from '../utils/budgetUtils';
-import type { Budget, BudgetWithCalc } from '../types';
+import { toMonthKey, monthKeyToIso } from '../utils/budgetUtils';
+import type { BudgetWithCalc } from '../types';
 
 type FormState = { amount: string; month: string };
 const emptyForm = (): FormState => ({ amount: '', month: toMonthKey(new Date().toISOString()) });
 
 export default function Budgets() {
-  const { expenses, budgets, addBudget, updateBudget, deleteBudget } = useAppData();
+  const { budgets, addBudget, updateBudget, deleteBudget } = useAppData();
   const { user }  = useAuth();
   const userId    = user?.id ?? '';
 
   const [showModal, setShowModal] = useState(false);
-  const [editing,   setEditing]   = useState<Budget | null>(null);
+  const [editing,   setEditing]   = useState<BudgetWithCalc | null>(null);
   const [form,      setForm]      = useState<FormState>(emptyForm());
   const [formError, setFormError] = useState('');
   const [deleteId,  setDeleteId]  = useState<string | null>(null);
+  const [saving,    setSaving]    = useState(false);
 
-  const userBudgets: BudgetWithCalc[] = budgets
-    .filter(b => b.userId === userId)
-    .map(b => calcBudget(b, expenses));
+  const userBudgets = budgets.filter(b => b.userId === userId);
 
   const openAdd = () => {
     setEditing(null);
@@ -38,7 +37,7 @@ export default function Budgets() {
     setShowModal(true);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     setFormError('');
     const amt = parseFloat(form.amount);
     if (isNaN(amt) || amt <= 0) { setFormError('Enter a valid positive amount.'); return; }
@@ -50,16 +49,24 @@ export default function Budgets() {
     );
     if (duplicate) { setFormError('A budget for that month already exists.'); return; }
 
-    if (editing) {
-      updateBudget({ ...editing, amount: amt, month: monthIso });
-    } else {
-      addBudget({ id: `bud-${Date.now()}`, amount: amt, month: monthIso, userId });
+    setSaving(true);
+    try {
+      if (editing) {
+        await updateBudget(editing.id, amt);
+      } else {
+        await addBudget(amt, monthIso);
+      }
+      setShowModal(false);
+    } catch (err: unknown) {
+      setFormError(err instanceof Error ? err.message : 'Failed to save budget.');
+    } finally {
+      setSaving(false);
     }
-    setShowModal(false);
   };
 
-  const confirmDelete = () => {
-    if (deleteId) deleteBudget(deleteId);
+  const confirmDelete = async () => {
+    if (!deleteId) return;
+    try { await deleteBudget(deleteId); } catch { /* ignore */ }
     setDeleteId(null);
   };
 
@@ -145,9 +152,10 @@ export default function Budgets() {
               </button>
               <button
                 onClick={handleSave}
-                className="flex-1 py-2 bg-[#0B2545] text-white rounded-lg text-sm font-medium hover:bg-[#0d2e56] transition-colors"
+                disabled={saving}
+                className="flex-1 py-2 bg-[#0B2545] text-white rounded-lg text-sm font-medium hover:bg-[#0d2e56] transition-colors disabled:opacity-60"
               >
-                {editing ? 'Save Changes' : 'Add Budget'}
+                {saving ? 'Saving…' : editing ? 'Save Changes' : 'Add Budget'}
               </button>
             </div>
           </div>

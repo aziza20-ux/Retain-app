@@ -4,7 +4,7 @@ import SummaryCard from '../components/SummaryCard';
 import { useAppData } from '../context/AppDataContext';
 import { useAuth } from '../context/AuthContext';
 import {
-  calcBudget, expenseInMonth, STATUS_STYLES,
+  expenseInMonth, STATUS_STYLES,
   formatDate, formatMonth, toMonthKey, monthKeyToIso,
 } from '../utils/budgetUtils';
 
@@ -22,9 +22,8 @@ export default function Dashboard() {
     e => e.userId === userId && expenseInMonth(e, monthIso),
   );
 
-  // Budget for this user in the selected month
-  const rawBudget = budgets.find(b => b.userId === userId && toMonthKey(b.month) === selectedMonth);
-  const budget    = rawBudget ? calcBudget(rawBudget, expenses) : null;
+  // Budget for this user in the selected month — already a BudgetWithCalc from AppDataContext
+  const budget = budgets.find(b => b.userId === userId && toMonthKey(b.month) === selectedMonth) ?? null;
 
   // Derived metrics
   const totalSpent    = monthExpenses.reduce((s, e) => s + e.amount, 0);
