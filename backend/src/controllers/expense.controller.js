@@ -1,9 +1,11 @@
+import { Decimal } from "@prisma/client/runtime/client";
 import { prisma } from "../config/prisma.config.js";
 import {
   createExpenseSchema,
   updateExpenseSchema,
   expenseIdSchema,
   expenseQuerySchema,
+  summaryQuerySchema,
 } from "../schemas/expense.schema.js";
 
 // POST /api/expenses
@@ -179,6 +181,62 @@ export const deleteExpense = async (req, res, next) => {
     await prisma.expense.delete({ where: { id: idResult.data.id } });
 
     return res.status(200).json({ message: "Expense deleted successfully" });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// GET /api/expenses/summary
+// Returns the authenticated user's total spending grouped by category.
+// Supports an optional ?month= ISO string to restrict to a single calendar month.
+// Uses groupBy + aggregate so the full expense table is never loaded into memory.
+export const getCategorySummary = async (req, res, next) => {
+  try {
+    const parsed = summaryQuerySchema.safeParse(req.query);
+    if (!parsed.success) {
+      return res.status(400).json({ message: "Invalid query parameters", errors: parsed.error.flatten().fieldErrors });
+    }
+
+    const { month } = parsed.data;
+
+    // Build the date filter when a month is supplied.
+    // Uses UTC boundaries consistent with budget.controller.js.
+    const dateFilter = month
+      ? {
+          gte: new Date(Date.UTC(month.getUTCFullYear(), month.getUTCMonth(), 1)),
+          lt:  new Date(Date.UTC(month.getUTCFullYear(), month.getUTCMonth() + 1, 1)),
+        }
+      : undefined;
+
+    const where = { userId: req.user.id, ...(dateFilter ? { date: dateFilter } : {}) };
+
+    // groupBy returns only categories that have at least one matching expense.
+    const groupRows = await prisma.expense.groupBy({
+      by: ["categoryId"],
+      where,
+      _sum:   { amount: true },
+      _count: { id: true },
+    });
+
+    // Resolve category names in a single query.
+    const categoryIds = groupRows.map((r) => r.categoryId);
+    const categories  = categoryIds.length
+      ? await prisma.category.findMany({ where: { id: { in: categoryIds } } })
+      : [];
+
+    const nameMap = new Map(categories.map((c) => [c.id, c.name]));
+
+    const summary = groupRows.map((row) => ({
+      categoryId:   row.categoryId,
+      categoryName: nameMap.get(row.categoryId) ?? "Unknown",
+      totalSpent:   (row._sum.amount ?? new Decimal(0)).toFixed(2),
+      expenseCount: row._count.id,
+    }));
+
+    // Sort by totalSpent descending for a useful default order.
+    summary.sort((a, b) => Number(b.totalSpent) - Number(a.totalSpent));
+
+    return res.status(200).json({ summary });
   } catch (err) {
     next(err);
   }

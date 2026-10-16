@@ -131,3 +131,13 @@ export const expenseQuerySchema = z
       path: ["startDate"],
     }
   );
+
+// Schema for GET /api/expenses/summary
+// month is optional — when supplied, restricts the summary to that calendar month.
+export const summaryQuerySchema = z.object({
+  month: z
+    .string()
+    .datetime({ message: "month must be a valid ISO 8601 datetime string" })
+    .transform((val) => new Date(val))
+    .optional(),
+});
