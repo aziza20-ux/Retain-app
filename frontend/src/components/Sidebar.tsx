@@ -19,9 +19,9 @@ export default function Sidebar() {
   const { logout, role, user } = useAuth();
   const navigate = useNavigate();
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     setMobileOpen(false);
-    logout();
+    await logout();
     navigate('/login');
   };
 
