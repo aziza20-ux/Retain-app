@@ -29,6 +29,8 @@ interface ExpenseFormProps {
   categories: Category[];
   onSave: (data: ExpenseFormData) => void;
   onCancel: () => void;
+  saving?: boolean;
+  error?: string;
 }
 
 function buildForm(expense: Expense | null, defaultCategoryId: string): FormState {
@@ -52,7 +54,7 @@ function buildForm(expense: Expense | null, defaultCategoryId: string): FormStat
   };
 }
 
-export default function ExpenseForm({ expense, categories, onSave, onCancel }: ExpenseFormProps) {
+export default function ExpenseForm({ expense, categories, onSave, onCancel, saving, error }: ExpenseFormProps) {
   const defaultCategoryId = categories[0]?.id ?? '';
   const [form,      setForm]      = useState<FormState>(() => buildForm(expense, defaultCategoryId));
   const [formError, setFormError] = useState('');
@@ -91,8 +93,8 @@ export default function ExpenseForm({ expense, categories, onSave, onCancel }: E
           {expense ? 'Edit Expense' : 'Add Expense'}
         </h2>
 
-        {formError && (
-          <div className="mb-3 px-3 py-2 bg-red-50 text-[#DC3545] text-sm rounded-lg">{formError}</div>
+        {(formError || error) && (
+          <div className="mb-3 px-3 py-2 bg-red-50 text-[#DC3545] text-sm rounded-lg">{formError || error}</div>
         )}
 
         <div className="space-y-3">
@@ -164,9 +166,10 @@ export default function ExpenseForm({ expense, categories, onSave, onCancel }: E
           </button>
           <button
             onClick={handleSave}
-            className="flex-1 py-2 bg-[#0B2545] text-white rounded-lg text-sm font-medium hover:bg-[#0d2e56] transition-colors"
+            disabled={saving}
+            className="flex-1 py-2 bg-[#0B2545] text-white rounded-lg text-sm font-medium hover:bg-[#0d2e56] transition-colors disabled:opacity-60"
           >
-            {expense ? 'Save Changes' : 'Add Expense'}
+            {saving ? 'Saving…' : expense ? 'Save Changes' : 'Add Expense'}
           </button>
         </div>
       </div>
