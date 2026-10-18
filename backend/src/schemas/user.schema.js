@@ -1,10 +1,10 @@
-
-
 import { z } from "zod";
 
-
-
-const emailField = z.string().trim().email("Invalid email address").toLowerCase();
+const emailField = z
+  .string()
+  .trim()
+  .email("Invalid email address")
+  .toLowerCase();
 
 const passwordField = z
   .string()
@@ -17,7 +17,6 @@ const nameField = z
   .min(1, "Name is required")
   .max(100, "Name must be at most 100 characters");
 
-
 // Rejected fields: role, passwordHash, id, createdAt, updatedAt (via .strict()).
 
 export const registerSchema = z
@@ -28,7 +27,6 @@ export const registerSchema = z
   })
   .strict();
 
-
 export const loginSchema = z
   .object({
     email: emailField,
@@ -38,8 +36,6 @@ export const loginSchema = z
       .max(128, "Password must be at most 128 characters"),
   })
   .strict();
-
-
 
 export const updateProfileSchema = z
   .object({

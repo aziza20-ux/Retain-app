@@ -10,7 +10,12 @@ export const createCategory = async (req, res, next) => {
   try {
     const result = createCategorySchema.safeParse(req.body);
     if (!result.success) {
-      return res.status(400).json({ message: "Validation failed", errors: result.error.flatten().fieldErrors });
+      return res
+        .status(400)
+        .json({
+          message: "Validation failed",
+          errors: result.error.flatten().fieldErrors,
+        });
     }
 
     const category = await prisma.category.create({ data: result.data });
@@ -18,7 +23,9 @@ export const createCategory = async (req, res, next) => {
     return res.status(201).json({ category });
   } catch (err) {
     if (err?.code === "P2002") {
-      return res.status(409).json({ message: "A category with this name already exists" });
+      return res
+        .status(409)
+        .json({ message: "A category with this name already exists" });
     }
     next(err);
   }
@@ -45,7 +52,9 @@ export const getCategoryById = async (req, res, next) => {
       return res.status(400).json({ message: "Invalid category ID" });
     }
 
-    const category = await prisma.category.findUnique({ where: { id: idResult.data.id } });
+    const category = await prisma.category.findUnique({
+      where: { id: idResult.data.id },
+    });
     if (!category) {
       return res.status(404).json({ message: "Category not found" });
     }
@@ -66,10 +75,17 @@ export const updateCategory = async (req, res, next) => {
 
     const bodyResult = updateCategorySchema.safeParse(req.body);
     if (!bodyResult.success) {
-      return res.status(400).json({ message: "Validation failed", errors: bodyResult.error.flatten().fieldErrors });
+      return res
+        .status(400)
+        .json({
+          message: "Validation failed",
+          errors: bodyResult.error.flatten().fieldErrors,
+        });
     }
 
-    const existing = await prisma.category.findUnique({ where: { id: idResult.data.id } });
+    const existing = await prisma.category.findUnique({
+      where: { id: idResult.data.id },
+    });
     if (!existing) {
       return res.status(404).json({ message: "Category not found" });
     }
@@ -82,7 +98,9 @@ export const updateCategory = async (req, res, next) => {
     return res.status(200).json({ category });
   } catch (err) {
     if (err?.code === "P2002") {
-      return res.status(409).json({ message: "A category with this name already exists" });
+      return res
+        .status(409)
+        .json({ message: "A category with this name already exists" });
     }
     next(err);
   }
@@ -106,7 +124,9 @@ export const deleteCategory = async (req, res, next) => {
     }
 
     if (existing.name === "Uncategorized") {
-      return res.status(400).json({ message: "The Uncategorized category cannot be deleted" });
+      return res
+        .status(400)
+        .json({ message: "The Uncategorized category cannot be deleted" });
     }
 
     const uncategorized = await prisma.category.findUnique({
@@ -115,7 +135,8 @@ export const deleteCategory = async (req, res, next) => {
 
     if (!uncategorized) {
       return res.status(409).json({
-        message: "Cannot delete category: the Uncategorized fallback category does not exist. Please seed it first.",
+        message:
+          "Cannot delete category: the Uncategorized fallback category does not exist. Please seed it first.",
       });
     }
 
@@ -127,7 +148,11 @@ export const deleteCategory = async (req, res, next) => {
       prisma.category.delete({ where: { id } }),
     ]);
 
-    return res.status(200).json({ message: "Category deleted and expenses reassigned to Uncategorized" });
+    return res
+      .status(200)
+      .json({
+        message: "Category deleted and expenses reassigned to Uncategorized",
+      });
   } catch (err) {
     next(err);
   }

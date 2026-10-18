@@ -7,16 +7,14 @@ import {
   budgetQuerySchema,
 } from "../schemas/budget.schema.js";
 
-
 const normalizeToMonthStart = (date) => {
   return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), 1));
 };
 
-
 const withCalculations = async (budget) => {
   const monthStart = budget.month;
   const monthEnd = new Date(
-    Date.UTC(monthStart.getUTCFullYear(), monthStart.getUTCMonth() + 1, 1)
+    Date.UTC(monthStart.getUTCFullYear(), monthStart.getUTCMonth() + 1, 1),
   );
 
   const aggregate = await prisma.expense.aggregate({
@@ -56,7 +54,12 @@ export const createBudget = async (req, res, next) => {
   try {
     const result = createBudgetSchema.safeParse(req.body);
     if (!result.success) {
-      return res.status(400).json({ message: "Validation failed", errors: result.error.flatten().fieldErrors });
+      return res
+        .status(400)
+        .json({
+          message: "Validation failed",
+          errors: result.error.flatten().fieldErrors,
+        });
     }
 
     const { amount, month } = result.data;
@@ -73,7 +76,9 @@ export const createBudget = async (req, res, next) => {
     return res.status(201).json({ budget: await withCalculations(budget) });
   } catch (err) {
     if (err?.code === "P2002") {
-      return res.status(409).json({ message: "A budget already exists for this month" });
+      return res
+        .status(409)
+        .json({ message: "A budget already exists for this month" });
     }
     next(err);
   }
@@ -84,7 +89,12 @@ export const getBudgets = async (req, res, next) => {
   try {
     const result = budgetQuerySchema.safeParse(req.query);
     if (!result.success) {
-      return res.status(400).json({ message: "Invalid query parameters", errors: result.error.flatten().fieldErrors });
+      return res
+        .status(400)
+        .json({
+          message: "Invalid query parameters",
+          errors: result.error.flatten().fieldErrors,
+        });
     }
 
     const { month, startMonth, endMonth } = result.data;
@@ -117,7 +127,9 @@ export const getBudgetByMonth = async (req, res, next) => {
   try {
     const parsed = budgetQuerySchema.safeParse(req.query);
     if (!parsed.success || !parsed.data.month) {
-      return res.status(400).json({ message: "A valid month query parameter is required" });
+      return res
+        .status(400)
+        .json({ message: "A valid month query parameter is required" });
     }
 
     const normalizedMonth = normalizeToMonthStart(parsed.data.month);
@@ -129,7 +141,9 @@ export const getBudgetByMonth = async (req, res, next) => {
     });
 
     if (!budget) {
-      return res.status(404).json({ message: "Budget not found for this month" });
+      return res
+        .status(404)
+        .json({ message: "Budget not found for this month" });
     }
 
     return res.status(200).json({ budget: await withCalculations(budget) });
@@ -148,10 +162,17 @@ export const updateBudget = async (req, res, next) => {
 
     const bodyResult = updateBudgetSchema.safeParse(req.body);
     if (!bodyResult.success) {
-      return res.status(400).json({ message: "Validation failed", errors: bodyResult.error.flatten().fieldErrors });
+      return res
+        .status(400)
+        .json({
+          message: "Validation failed",
+          errors: bodyResult.error.flatten().fieldErrors,
+        });
     }
 
-    const existing = await prisma.budget.findUnique({ where: { id: idResult.data.id } });
+    const existing = await prisma.budget.findUnique({
+      where: { id: idResult.data.id },
+    });
     if (!existing || existing.userId !== req.user.id) {
       return res.status(404).json({ message: "Budget not found" });
     }
@@ -175,7 +196,9 @@ export const deleteBudget = async (req, res, next) => {
       return res.status(400).json({ message: "Invalid budget ID" });
     }
 
-    const existing = await prisma.budget.findUnique({ where: { id: idResult.data.id } });
+    const existing = await prisma.budget.findUnique({
+      where: { id: idResult.data.id },
+    });
     if (!existing || existing.userId !== req.user.id) {
       return res.status(404).json({ message: "Budget not found" });
     }

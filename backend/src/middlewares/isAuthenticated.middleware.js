@@ -10,11 +10,11 @@ const isAuthenticated = (req, res, next) => {
     return res.status(401).json({ message: "Authentication required" });
   }
 
-  const token = authHeader.slice(7); 
+  const token = authHeader.slice(7);
 
   try {
     const payload = jwt.verify(token, process.env.JWT_SECRET);
-   
+
     req.user = { id: payload.sub, role: payload.role };
     next();
   } catch {

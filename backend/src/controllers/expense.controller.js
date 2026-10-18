@@ -13,12 +13,20 @@ export const createExpense = async (req, res, next) => {
   try {
     const result = createExpenseSchema.safeParse(req.body);
     if (!result.success) {
-      return res.status(400).json({ message: "Validation failed", errors: result.error.flatten().fieldErrors });
+      return res
+        .status(400)
+        .json({
+          message: "Validation failed",
+          errors: result.error.flatten().fieldErrors,
+        });
     }
 
-    const { title, amount, date, paymentMethod, categoryId, notes } = result.data;
+    const { title, amount, date, paymentMethod, categoryId, notes } =
+      result.data;
 
-    const category = await prisma.category.findUnique({ where: { id: categoryId } });
+    const category = await prisma.category.findUnique({
+      where: { id: categoryId },
+    });
     if (!category) {
       return res.status(404).json({ message: "Category not found" });
     }
@@ -47,7 +55,12 @@ export const getExpenses = async (req, res, next) => {
   try {
     const result = expenseQuerySchema.safeParse(req.query);
     if (!result.success) {
-      return res.status(400).json({ message: "Invalid query parameters", errors: result.error.flatten().fieldErrors });
+      return res
+        .status(400)
+        .json({
+          message: "Invalid query parameters",
+          errors: result.error.flatten().fieldErrors,
+        });
     }
 
     const {
@@ -138,16 +151,25 @@ export const updateExpense = async (req, res, next) => {
 
     const bodyResult = updateExpenseSchema.safeParse(req.body);
     if (!bodyResult.success) {
-      return res.status(400).json({ message: "Validation failed", errors: bodyResult.error.flatten().fieldErrors });
+      return res
+        .status(400)
+        .json({
+          message: "Validation failed",
+          errors: bodyResult.error.flatten().fieldErrors,
+        });
     }
 
-    const existing = await prisma.expense.findUnique({ where: { id: idResult.data.id } });
+    const existing = await prisma.expense.findUnique({
+      where: { id: idResult.data.id },
+    });
     if (!existing || existing.userId !== req.user.id) {
       return res.status(404).json({ message: "Expense not found" });
     }
 
     if (bodyResult.data.categoryId) {
-      const category = await prisma.category.findUnique({ where: { id: bodyResult.data.categoryId } });
+      const category = await prisma.category.findUnique({
+        where: { id: bodyResult.data.categoryId },
+      });
       if (!category) {
         return res.status(404).json({ message: "Category not found" });
       }
@@ -173,7 +195,9 @@ export const deleteExpense = async (req, res, next) => {
       return res.status(400).json({ message: "Invalid expense ID" });
     }
 
-    const existing = await prisma.expense.findUnique({ where: { id: idResult.data.id } });
+    const existing = await prisma.expense.findUnique({
+      where: { id: idResult.data.id },
+    });
     if (!existing || existing.userId !== req.user.id) {
       return res.status(404).json({ message: "Expense not found" });
     }
@@ -194,7 +218,12 @@ export const getCategorySummary = async (req, res, next) => {
   try {
     const parsed = summaryQuerySchema.safeParse(req.query);
     if (!parsed.success) {
-      return res.status(400).json({ message: "Invalid query parameters", errors: parsed.error.flatten().fieldErrors });
+      return res
+        .status(400)
+        .json({
+          message: "Invalid query parameters",
+          errors: parsed.error.flatten().fieldErrors,
+        });
     }
 
     const { month } = parsed.data;
@@ -203,33 +232,40 @@ export const getCategorySummary = async (req, res, next) => {
     // Uses UTC boundaries consistent with budget.controller.js.
     const dateFilter = month
       ? {
-          gte: new Date(Date.UTC(month.getUTCFullYear(), month.getUTCMonth(), 1)),
-          lt:  new Date(Date.UTC(month.getUTCFullYear(), month.getUTCMonth() + 1, 1)),
+          gte: new Date(
+            Date.UTC(month.getUTCFullYear(), month.getUTCMonth(), 1),
+          ),
+          lt: new Date(
+            Date.UTC(month.getUTCFullYear(), month.getUTCMonth() + 1, 1),
+          ),
         }
       : undefined;
 
-    const where = { userId: req.user.id, ...(dateFilter ? { date: dateFilter } : {}) };
+    const where = {
+      userId: req.user.id,
+      ...(dateFilter ? { date: dateFilter } : {}),
+    };
 
     // groupBy returns only categories that have at least one matching expense.
     const groupRows = await prisma.expense.groupBy({
       by: ["categoryId"],
       where,
-      _sum:   { amount: true },
+      _sum: { amount: true },
       _count: { id: true },
     });
 
     // Resolve category names in a single query.
     const categoryIds = groupRows.map((r) => r.categoryId);
-    const categories  = categoryIds.length
+    const categories = categoryIds.length
       ? await prisma.category.findMany({ where: { id: { in: categoryIds } } })
       : [];
 
     const nameMap = new Map(categories.map((c) => [c.id, c.name]));
 
     const summary = groupRows.map((row) => ({
-      categoryId:   row.categoryId,
+      categoryId: row.categoryId,
       categoryName: nameMap.get(row.categoryId) ?? "Unknown",
-      totalSpent:   (row._sum.amount ?? new Decimal(0)).toFixed(2),
+      totalSpent: (row._sum.amount ?? new Decimal(0)).toFixed(2),
       expenseCount: row._count.id,
     }));
 

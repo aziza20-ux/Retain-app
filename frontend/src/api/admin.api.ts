@@ -1,5 +1,5 @@
-import api from './axios';
-import type { Role } from '../types';
+import api from "./axios";
+import type { Role } from "../types";
 
 export interface CategoryInsight {
   categoryId: string;
@@ -39,6 +39,5 @@ export interface InsightsResponse {
 }
 
 export const adminApi = {
-  insights: () =>
-    api.get<InsightsResponse>('/admin/insights'),
+  insights: () => api.get<InsightsResponse>("/admin/insights"),
 };

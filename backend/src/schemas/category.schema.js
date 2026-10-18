@@ -1,7 +1,4 @@
-
-
 import { z } from "zod";
-
 
 const nameField = z
   .string()
@@ -15,16 +12,12 @@ const descriptionField = z
   .max(500, "Description must be at most 500 characters")
   .optional();
 
-
-
 export const createCategorySchema = z
   .object({
     name: nameField,
     description: descriptionField,
   })
   .strict();
-
-
 
 export const updateCategorySchema = z
   .object({
@@ -35,7 +28,6 @@ export const updateCategorySchema = z
   .refine((data) => Object.keys(data).length > 0, {
     message: "At least one field (name or description) must be provided",
   });
-
 
 export const categoryIdSchema = z.object({
   id: z.string().uuid("Invalid category ID"),

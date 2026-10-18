@@ -26,16 +26,31 @@ async function main() {
 
   // --- Default categories ---
   const categories = [
-    {  name: "Uncategorized", description: "Default fallback category" },
-    { name: "Food & Dining", description: "Restaurants, groceries, and food delivery" },
-    {  name: "Transport", description: "Fuel, public transport, and ride-hailing" },
-    {  name: "Housing", description: "Rent, utilities, and home maintenance" },
-    { name: "Healthcare", description: "Medical bills, pharmacy, and insurance" },
+    { name: "Uncategorized", description: "Default fallback category" },
+    {
+      name: "Food & Dining",
+      description: "Restaurants, groceries, and food delivery",
+    },
+    {
+      name: "Transport",
+      description: "Fuel, public transport, and ride-hailing",
+    },
+    { name: "Housing", description: "Rent, utilities, and home maintenance" },
+    {
+      name: "Healthcare",
+      description: "Medical bills, pharmacy, and insurance",
+    },
     { name: "Entertainment", description: "Streaming, events, and hobbies" },
-    { name: "Shopping", description: "Clothing, electronics, and general shopping" },
-    {  name: "Education", description: "Tuition, books, and online courses" },
-    {  name: "Savings & Investments", description: "Savings deposits and investment contributions" },
-    {  name: "Other", description: "Miscellaneous expenses" },
+    {
+      name: "Shopping",
+      description: "Clothing, electronics, and general shopping",
+    },
+    { name: "Education", description: "Tuition, books, and online courses" },
+    {
+      name: "Savings & Investments",
+      description: "Savings deposits and investment contributions",
+    },
+    { name: "Other", description: "Miscellaneous expenses" },
   ];
 
   for (const category of categories) {

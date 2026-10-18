@@ -1,14 +1,18 @@
-import { STATUS_STYLES, formatMonth } from '../../utils/budgetUtils';
-import type { BudgetWithCalc } from '../../types';
+import { STATUS_STYLES, formatMonth } from "../../utils/budgetUtils";
+import type { BudgetWithCalc } from "../../types";
 
 interface BudgetCardProps {
   budget: BudgetWithCalc;
-  onEdit:   (budget: BudgetWithCalc) => void;
+  onEdit: (budget: BudgetWithCalc) => void;
   onDelete: (id: string) => void;
 }
 
-export default function BudgetCard({ budget, onEdit, onDelete }: BudgetCardProps) {
-  const s   = STATUS_STYLES[budget.status];
+export default function BudgetCard({
+  budget,
+  onEdit,
+  onDelete,
+}: BudgetCardProps) {
+  const s = STATUS_STYLES[budget.status];
   const pct = Math.min(budget.utilisation, 100);
 
   return (
@@ -16,8 +20,12 @@ export default function BudgetCard({ budget, onEdit, onDelete }: BudgetCardProps
       {/* Header row */}
       <div className="flex items-start justify-between mb-3">
         <div>
-          <p className="font-semibold text-[#0B2545]">{formatMonth(budget.month)}</p>
-          <span className={`inline-block mt-1 text-xs font-medium px-2 py-0.5 rounded-full ${s.badgeBg}`}>
+          <p className="font-semibold text-[#0B2545]">
+            {formatMonth(budget.month)}
+          </p>
+          <span
+            className={`inline-block mt-1 text-xs font-medium px-2 py-0.5 rounded-full ${s.badgeBg}`}
+          >
             {s.label}
           </span>
         </div>
@@ -52,17 +60,23 @@ export default function BudgetCard({ budget, onEdit, onDelete }: BudgetCardProps
       <div className="grid grid-cols-3 gap-2 text-center">
         <div>
           <p className="text-xs text-[#6C757D]">Budget</p>
-          <p className="text-sm font-semibold text-[#0B2545]">${budget.amount.toFixed(2)}</p>
+          <p className="text-sm font-semibold text-[#0B2545]">
+            ${budget.amount.toFixed(2)}
+          </p>
         </div>
         <div>
           <p className="text-xs text-[#6C757D]">Spent</p>
-          <p className={`text-sm font-semibold ${s.textColor}`}>${budget.totalSpent.toFixed(2)}</p>
+          <p className={`text-sm font-semibold ${s.textColor}`}>
+            ${budget.totalSpent.toFixed(2)}
+          </p>
         </div>
         <div>
           <p className="text-xs text-[#6C757D]">Remaining</p>
-          <p className={`text-sm font-semibold ${budget.remaining < 0 ? 'text-[#DC3545]' : 'text-[#198754]'}`}>
+          <p
+            className={`text-sm font-semibold ${budget.remaining < 0 ? "text-[#DC3545]" : "text-[#198754]"}`}
+          >
             ${Math.abs(budget.remaining).toFixed(2)}
-            {budget.remaining < 0 ? ' over' : ''}
+            {budget.remaining < 0 ? " over" : ""}
           </p>
         </div>
       </div>

@@ -1,7 +1,4 @@
-
 import { z } from "zod";
-
-
 
 export const PaymentMethodEnum = z.enum([
   "CASH",
@@ -11,14 +8,11 @@ export const PaymentMethodEnum = z.enum([
   "OTHER",
 ]);
 
-
-
 const titleField = z
   .string()
   .trim()
   .min(1, "Title is required")
   .max(200, "Title must be at most 200 characters");
-
 
 const amountField = z
   .union([z.string(), z.number()])
@@ -27,7 +21,7 @@ const amountField = z
     z
       .number()
       .positive("Amount must be a positive number")
-      .finite("Amount must be a finite number")
+      .finite("Amount must be a finite number"),
   );
 
 // Date: accepts an ISO 8601 string and transforms it to a JS Date object.
@@ -44,7 +38,6 @@ const notesField = z
 
 const categoryIdField = z.string().uuid("Invalid category ID");
 
-
 export const createExpenseSchema = z
   .object({
     title: titleField,
@@ -58,13 +51,11 @@ export const createExpenseSchema = z
   .refine(
     (data) => {
       const expenseDay = data.date.toISOString().slice(0, 10);
-      const todayDay   = new Date().toISOString().slice(0, 10);
+      const todayDay = new Date().toISOString().slice(0, 10);
       return expenseDay <= todayDay;
     },
-    { message: "Expense date cannot be in the future", path: ["date"] }
+    { message: "Expense date cannot be in the future", path: ["date"] },
   );
-
-
 
 export const updateExpenseSchema = z
   .object({
@@ -80,13 +71,9 @@ export const updateExpenseSchema = z
     message: "At least one field must be provided for update",
   });
 
-
-
 export const expenseIdSchema = z.object({
   id: z.string().uuid("Invalid expense ID"),
 });
-
-
 
 const positiveIntString = z
   .string()
@@ -105,7 +92,9 @@ export const expenseQuerySchema = z
     // Date range — ISO 8601 strings, transformed to Date objects
     startDate: z
       .string()
-      .datetime({ message: "startDate must be a valid ISO 8601 datetime string" })
+      .datetime({
+        message: "startDate must be a valid ISO 8601 datetime string",
+      })
       .transform((val) => new Date(val))
       .optional(),
     endDate: z
@@ -137,7 +126,7 @@ export const expenseQuerySchema = z
     {
       message: "startDate must not be after endDate",
       path: ["startDate"],
-    }
+    },
   );
 
 // Schema for GET /api/expenses/summary

@@ -3,11 +3,11 @@ import express from "express";
 import helmet from "helmet";
 import cors from "cors";
 import { rateLimit } from "express-rate-limit";
-import authRouter     from "./routes/auth.routes.js";
-import budgetRouter   from "./routes/budget.routes.js";
+import authRouter from "./routes/auth.routes.js";
+import budgetRouter from "./routes/budget.routes.js";
 import categoryRouter from "./routes/category.routes.js";
-import expenseRouter  from "./routes/expense.routes.js";
-import adminRouter    from "./routes/admin.routes.js";
+import expenseRouter from "./routes/expense.routes.js";
+import adminRouter from "./routes/admin.routes.js";
 
 const app = express();
 
@@ -24,7 +24,7 @@ app.use(
     origin: allowedOrigin,
     methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
-  })
+  }),
 );
 
 // ── Body parsing ────────────────────────────────────────────────────────────
@@ -44,11 +44,11 @@ const authLimiter = rateLimit({
 const PORT = Number(process.env.PORT) || 3001;
 
 // ── Routes ──────────────────────────────────────────────────────────────────
-app.use("/api/auth",       authLimiter, authRouter);
-app.use("/api/budgets",    budgetRouter);
+app.use("/api/auth", authLimiter, authRouter);
+app.use("/api/budgets", budgetRouter);
 app.use("/api/categories", categoryRouter);
-app.use("/api/expenses",   expenseRouter);
-app.use("/api/admin",      adminRouter);
+app.use("/api/expenses", expenseRouter);
+app.use("/api/admin", adminRouter);
 
 // ── 404 handler ─────────────────────────────────────────────────────────────
 app.use((req, res) => {
@@ -59,7 +59,9 @@ app.use((req, res) => {
 // Must have 4 parameters for Express to treat it as an error handler.
 app.use((err, req, res, next) => {
   console.error(err);
-  res.status(err.status ?? 500).json({ message: err.message ?? "Internal server error" });
+  res
+    .status(err.status ?? 500)
+    .json({ message: err.message ?? "Internal server error" });
 });
 
 app.listen(PORT, () => {

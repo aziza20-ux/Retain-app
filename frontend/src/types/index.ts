@@ -1,8 +1,13 @@
-export type Role = 'USER' | 'ADMIN';
-export type PaymentMethod = 'CASH' | 'CARD' | 'MOBILE_MONEY' | 'BANK_TRANSFER' | 'OTHER';
-export type BudgetStatus = 'WITHIN' | 'APPROACHING' | 'OVER';
-export type SortField = 'date' | 'amount';
-export type SortDir = 'asc' | 'desc';
+export type Role = "USER" | "ADMIN";
+export type PaymentMethod =
+  | "CASH"
+  | "CARD"
+  | "MOBILE_MONEY"
+  | "BANK_TRANSFER"
+  | "OTHER";
+export type BudgetStatus = "WITHIN" | "APPROACHING" | "OVER";
+export type SortField = "date" | "amount";
+export type SortDir = "asc" | "desc";
 
 export interface User {
   id: string;

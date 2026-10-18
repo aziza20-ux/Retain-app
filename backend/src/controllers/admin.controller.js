@@ -1,7 +1,6 @@
 import { Decimal } from "@prisma/client/runtime/client";
 import { prisma } from "../config/prisma.config.js";
 
-
 const safeUserFields = {
   id: true,
   name: true,
@@ -10,22 +9,22 @@ const safeUserFields = {
   createdAt: true,
 };
 
-
 const safeOwnerFields = {
   id: true,
   name: true,
   email: true,
 };
 
-
 export const getInsights = async (req, res, next) => {
   try {
-    
     const now = new Date();
-    const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
-    const monthEnd   = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1));
+    const monthStart = new Date(
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1),
+    );
+    const monthEnd = new Date(
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1),
+    );
 
-    
     const [
       totalUsers,
       totalExpenses,
@@ -36,7 +35,6 @@ export const getInsights = async (req, res, next) => {
       recentExpenses,
       recentUsers,
     ] = await Promise.all([
-
       // 1. Total registered users
       prisma.user.count(),
 
@@ -58,7 +56,7 @@ export const getInsights = async (req, res, next) => {
       prisma.expense.groupBy({
         by: ["categoryId"],
         _count: { id: true },
-        _sum:   { amount: true },
+        _sum: { amount: true },
       }),
 
       // 8. Recently added expenses (platform-wide, ordered by createdAt desc)
@@ -67,7 +65,7 @@ export const getInsights = async (req, res, next) => {
         take: 10,
         include: {
           category: { select: { id: true, name: true } },
-          user:     { select: safeOwnerFields },
+          user: { select: safeOwnerFields },
         },
       }),
 
@@ -79,41 +77,42 @@ export const getInsights = async (req, res, next) => {
       }),
     ]);
 
-   
     const groupByMap = new Map(
       categoryGroupBy.map((row) => [
         row.categoryId,
         {
           expenseCount: row._count.id,
-          totalSpent:   row._sum.amount ?? new Decimal(0),
+          totalSpent: row._sum.amount ?? new Decimal(0),
         },
-      ])
+      ]),
     );
 
     // Merge with the full category list so zero-expense categories are included.
     const spendingByCategory = allCategories.map((cat) => {
       const stats = groupByMap.get(cat.id);
       return {
-        categoryId:    cat.id,
-        categoryName:  cat.name,
-        expenseCount:  stats?.expenseCount ?? 0,
-        totalSpent:    (stats?.totalSpent ?? new Decimal(0)).toFixed(2),
+        categoryId: cat.id,
+        categoryName: cat.name,
+        expenseCount: stats?.expenseCount ?? 0,
+        totalSpent: (stats?.totalSpent ?? new Decimal(0)).toFixed(2),
       };
     });
 
     // ── Top 5 most-used categories (by expense count desc, then name asc) ──
     const topCategories = [...spendingByCategory]
-      .sort((a, b) =>
-        b.expenseCount - a.expenseCount ||
-        a.categoryName.localeCompare(b.categoryName)
+      .sort(
+        (a, b) =>
+          b.expenseCount - a.expenseCount ||
+          a.categoryName.localeCompare(b.categoryName),
       )
       .slice(0, 5);
 
     // ── Bottom 5 least-used categories (by expense count asc, then name asc) ─
     const bottomCategories = [...spendingByCategory]
-      .sort((a, b) =>
-        a.expenseCount - b.expenseCount ||
-        a.categoryName.localeCompare(b.categoryName)
+      .sort(
+        (a, b) =>
+          a.expenseCount - b.expenseCount ||
+          a.categoryName.localeCompare(b.categoryName),
       )
       .slice(0, 5);
 

@@ -3,9 +3,6 @@ import jwt from "jsonwebtoken";
 import { prisma } from "../config/prisma.config.js";
 import { registerSchema, loginSchema } from "../schemas/user.schema.js";
 
-
-
-
 const safeUser = (user) => ({
   id: user.id,
   name: user.name,
@@ -20,7 +17,12 @@ export const register = async (req, res, next) => {
   try {
     const result = registerSchema.safeParse(req.body);
     if (!result.success) {
-      return res.status(400).json({ message: "Validation failed", errors: result.error.flatten().fieldErrors });
+      return res
+        .status(400)
+        .json({
+          message: "Validation failed",
+          errors: result.error.flatten().fieldErrors,
+        });
     }
 
     const { name, email, password } = result.data;
@@ -47,13 +49,20 @@ export const login = async (req, res, next) => {
   try {
     const result = loginSchema.safeParse(req.body);
     if (!result.success) {
-      return res.status(400).json({ message: "Validation failed", errors: result.error.flatten().fieldErrors });
+      return res
+        .status(400)
+        .json({
+          message: "Validation failed",
+          errors: result.error.flatten().fieldErrors,
+        });
     }
 
     const { email, password } = result.data;
 
     const user = await prisma.user.findUnique({ where: { email } });
-    const passwordMatch = user ? await bcrypt.compare(password, user.passwordHash) : false;
+    const passwordMatch = user
+      ? await bcrypt.compare(password, user.passwordHash)
+      : false;
 
     if (!user || !passwordMatch) {
       return res.status(401).json({ message: "Invalid credentials" });
@@ -62,7 +71,7 @@ export const login = async (req, res, next) => {
     const token = jwt.sign(
       { sub: user.id, role: user.role },
       process.env.JWT_SECRET,
-      { expiresIn: "7d" }
+      { expiresIn: "7d" },
     );
 
     return res.status(200).json({ token, user: safeUser(user) });
@@ -71,13 +80,7 @@ export const login = async (req, res, next) => {
   }
 };
 
-// POST /auth/logout
-// JWT is stateless — the server cannot invalidate a token that has already been
-// issued. This endpoint exists so the frontend has a consistent API call to
-// clear its React Context authentication state. The client MUST discard the
-// token from memory on receipt of this response. The token remains
-// cryptographically valid until its 7-day expiry; for this summative project
-// that limitation is acceptable and is documented here.
+
 export const logout = (req, res) => {
   // req.user is already verified by isAuthenticated middleware.
   return res.status(200).json({ message: "Logged out successfully" });
