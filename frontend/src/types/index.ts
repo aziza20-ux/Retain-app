@@ -63,4 +63,5 @@ export interface ExpenseFilterState {
   dateTo: string;
   sortField: SortField;
   sortDir: SortDir;
+  page: number;
 }
