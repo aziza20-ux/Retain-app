@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import Sidebar from '../components/Sidebar';
+import Toast from '../components/Toast';
 import ExpenseFilters from '../components/expenses/ExpenseFilters';
 import ExpenseList    from '../components/expenses/ExpenseList';
 import ExpenseDetails from '../components/expenses/ExpenseDetails';
@@ -25,6 +26,8 @@ export default function Expenses() {
   const [deleteId,  setDeleteId]  = useState<string | null>(null);
   const [saving,    setSaving]    = useState(false);
   const [formError, setFormError] = useState('');
+  const [toast,     setToast]     = useState('');
+  const dismissToast = useCallback(() => setToast(''), []);
 
   // ── Filter + sort (driven entirely by Redux state) ────────────────────────
   const userExpenses = expenses.filter(e => e.userId === userId);
@@ -68,8 +71,10 @@ export default function Expenses() {
     try {
       if (editing) {
         await updateExpense(editing.id, data);
+        setToast('Expense updated successfully.');
       } else {
         await addExpense(data);
+        setToast('Expense created successfully.');
       }
       setShowForm(false);
       setEditing(null);
@@ -90,6 +95,7 @@ export default function Expenses() {
     if (!deleteId) return;
     try {
       await deleteExpense(deleteId);
+      setToast('Expense deleted successfully.');
     } catch { /* ignore */ }
     setDeleteId(null);
   };
@@ -97,9 +103,9 @@ export default function Expenses() {
   return (
     <div className="flex h-screen overflow-hidden bg-[#F7F8FA]">
       <Sidebar />
-      <main className="flex-1 overflow-y-auto">
+      <main className="flex-1 overflow-y-auto pt-12 md:pt-0">
         {/* Header */}
-        <div className="px-6 py-6 border-b border-[#DEE2E6] bg-white flex items-center justify-between">
+        <div className="px-4 sm:px-6 py-4 sm:py-6 border-b border-[#DEE2E6] bg-white flex flex-wrap items-center justify-between gap-3">
           <div>
             <h1 className="text-xl font-bold text-[#0B2545]">Transactions</h1>
             <p className="text-sm text-[#6C757D] mt-0.5">{userExpenses.length} total expenses</p>
@@ -123,7 +129,7 @@ export default function Expenses() {
           />
           {/* Pagination controls */}
           {filtered.length > 0 && (
-            <div className="flex items-center justify-between bg-white rounded-xl shadow-sm px-4 py-3">
+            <div className="flex flex-col sm:flex-row items-center justify-between bg-white rounded-xl shadow-sm px-4 py-3 gap-2">
               <p className="text-sm text-[#6C757D]">
                 Showing {pageStart + 1}–{Math.min(pageStart + PAGE_SIZE, filtered.length)} of {filtered.length}
               </p>
@@ -236,6 +242,8 @@ export default function Expenses() {
           </div>
         </div>
       )}
+
+      {toast && <Toast message={toast} onDismiss={dismissToast} />}
     </div>
   );
 }

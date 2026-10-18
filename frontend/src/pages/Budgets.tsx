@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import Sidebar    from '../components/Sidebar';
 import BudgetCard from '../components/budgets/BudgetCard';
+import Toast      from '../components/Toast';
 import { useAppData } from '../context/AppDataContext';
 import { useAuth }    from '../context/AuthContext';
 import { toMonthKey, monthKeyToIso } from '../utils/budgetUtils';
@@ -20,6 +21,8 @@ export default function Budgets() {
   const [formError, setFormError] = useState('');
   const [deleteId,  setDeleteId]  = useState<string | null>(null);
   const [saving,    setSaving]    = useState(false);
+  const [toast,     setToast]     = useState('');
+  const dismissToast = useCallback(() => setToast(''), []);
 
   const userBudgets = budgets.filter(b => b.userId === userId);
 
@@ -53,8 +56,10 @@ export default function Budgets() {
     try {
       if (editing) {
         await updateBudget(editing.id, amt);
+        setToast('Budget updated successfully.');
       } else {
         await addBudget(amt, monthIso);
+        setToast('Budget created successfully.');
       }
       setShowModal(false);
     } catch (err: unknown) {
@@ -66,14 +71,14 @@ export default function Budgets() {
 
   const confirmDelete = async () => {
     if (!deleteId) return;
-    try { await deleteBudget(deleteId); } catch { /* ignore */ }
+    try { await deleteBudget(deleteId); setToast('Budget deleted successfully.'); } catch { /* ignore */ }
     setDeleteId(null);
   };
 
   return (
     <div className="flex h-screen overflow-hidden bg-[#F7F8FA]">
       <Sidebar />
-      <main className="flex-1 overflow-y-auto">
+      <main className="flex-1 overflow-y-auto pt-12 md:pt-0">
         {/* Header */}
         <div className="px-6 py-6 border-b border-[#DEE2E6] bg-white flex items-center justify-between">
           <div>
@@ -186,6 +191,8 @@ export default function Budgets() {
           </div>
         </div>
       )}
+
+      {toast && <Toast message={toast} onDismiss={dismissToast} />}
     </div>
   );
 }

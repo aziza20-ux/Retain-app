@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Sidebar from '../components/Sidebar';
+import Toast   from '../components/Toast';
 import { useAppData } from '../context/AppDataContext';
 import { adminApi } from '../api/admin.api';
 import type { Category } from '../types';
@@ -15,9 +16,10 @@ export default function AdminCategories() {
   const [editing,    setEditing]    = useState<Category | null>(null);
   const [form,       setForm]       = useState<FormState>(emptyForm());
   const [formError,  setFormError]  = useState('');
-  const [successMsg, setSuccessMsg] = useState('');
+  const [toast,      setToast]      = useState('');
   const [deleteId,   setDeleteId]   = useState<string | null>(null);
   const [saving,     setSaving]     = useState(false);
+  const dismissToast = useCallback(() => setToast(''), []);
 
   // Fetch platform-wide expense counts per category from admin insights.
   // Re-runs when categories change (e.g. after add/delete) to keep counts fresh.
@@ -37,7 +39,6 @@ export default function AdminCategories() {
     setEditing(null);
     setForm(emptyForm());
     setFormError('');
-    setSuccessMsg('');
     setShowModal(true);
   };
 
@@ -45,7 +46,6 @@ export default function AdminCategories() {
     setEditing(cat);
     setForm({ name: cat.name, description: cat.description ?? '' });
     setFormError('');
-    setSuccessMsg('');
     setShowModal(true);
   };
 
@@ -63,10 +63,10 @@ export default function AdminCategories() {
     try {
       if (editing) {
         await updateCategory(editing.id, { name: trimmedName, description: form.description.trim() });
-        setSuccessMsg(`"${trimmedName}" updated successfully.`);
+        setToast(`"${trimmedName}" updated successfully.`);
       } else {
         await addCategory(trimmedName, form.description.trim() || undefined);
-        setSuccessMsg(`"${trimmedName}" created successfully.`);
+        setToast(`"${trimmedName}" created successfully.`);
       }
       setShowModal(false);
     } catch (err: unknown) {
@@ -81,9 +81,8 @@ export default function AdminCategories() {
     const cat = categories.find(c => c.id === deleteId);
     try {
       await deleteCategory(deleteId);
-      setSuccessMsg(`"${cat?.name}" deleted. Affected expenses moved to Uncategorized.`);
+      setToast(`"${cat?.name}" deleted. Affected expenses moved to Uncategorized.`);
     } catch (err: unknown) {
-      setSuccessMsg('');
       setFormError(err instanceof Error ? err.message : 'Failed to delete category.');
     }
     setDeleteId(null);
@@ -96,7 +95,7 @@ export default function AdminCategories() {
   return (
     <div className="flex h-screen overflow-hidden bg-[#F7F8FA]">
       <Sidebar />
-      <main className="flex-1 overflow-y-auto">
+      <main className="flex-1 overflow-y-auto pt-12 md:pt-0">
 
         <div className="px-6 py-6 border-b border-[#DEE2E6] bg-white">
           <h1 className="text-xl font-bold text-[#0B2545]">Manage Categories</h1>
@@ -117,12 +116,6 @@ export default function AdminCategories() {
           {error && (
             <div className="mb-4 px-4 py-3 rounded-lg bg-red-50 text-[#DC3545] text-sm border border-red-200">
               Failed to load data: {error}
-            </div>
-          )}
-
-          {successMsg && (
-            <div className="mb-4 px-4 py-3 rounded-lg bg-green-50 text-[#198754] text-sm border border-green-200">
-              {successMsg}
             </div>
           )}
 
@@ -256,6 +249,8 @@ export default function AdminCategories() {
           </div>
         </div>
       )}
+
+      {toast && <Toast message={toast} onDismiss={dismissToast} />}
     </div>
   );
 }

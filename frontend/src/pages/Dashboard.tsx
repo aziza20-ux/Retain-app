@@ -53,7 +53,7 @@ export default function Dashboard() {
   return (
     <div className="flex h-screen overflow-hidden bg-[#F7F8FA]">
       <Sidebar />
-      <main className="flex-1 overflow-y-auto">
+      <main className="flex-1 overflow-y-auto pt-12 md:pt-0">
         {/* Header */}
         <div className="px-6 py-6 border-b border-[#DEE2E6] bg-white flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>

@@ -29,8 +29,9 @@ export default function Sidebar() {
 
   return (
     <>
-      {/* Mobile top bar — icon only, pinned to top */}
-      <div className="md:hidden flex items-start justify-end px-4 pt-3 pb-2 bg-[#2D2D2D]">
+      {/* Mobile top bar — fixed at top so it never participates in the flex row */}
+      <div className="md:hidden fixed top-0 inset-x-0 z-50 flex items-center justify-between px-4 py-3 bg-[#2D2D2D]">
+        <span className="text-white font-bold text-lg tracking-wide">Retain</span>
         <button
           onClick={() => setMobileOpen(!mobileOpen)}
           aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
