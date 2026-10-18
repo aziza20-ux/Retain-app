@@ -50,6 +50,7 @@ export default function Sidebar() {
           ${mobileOpen ? "translate-x-0" : "-translate-x-full"}
           md:translate-x-0
           ${collapsed ? "w-14" : "w-56"}
+          pt-14 md:pt-0
         `}
       >
         {/* Brand + collapse toggle */}
