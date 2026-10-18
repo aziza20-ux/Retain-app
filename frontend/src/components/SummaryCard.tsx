@@ -1,7 +1,9 @@
+type Variant = "default" | "dark" | "income" | "expense";
+
 interface SummaryCardProps {
   title: string;
   amount: number;
-  variant?: "default" | "dark" | "income" | "expense";
+  variant?: Variant;
   subtitle?: string;
 }
 
@@ -13,14 +15,14 @@ export default function SummaryCard({
 }: SummaryCardProps) {
   const base = "rounded-xl p-5 shadow-sm";
 
-  const styles: Record<string, string> = {
+  const styles: Record<Variant, string> = {
     default: `${base} bg-white text-[#0B2545]`,
     dark: `${base} bg-[#1A1A1A] text-white`,
     income: `${base} bg-white text-[#0B2545] border-l-4 border-[#198754]`,
     expense: `${base} bg-white text-[#0B2545] border-l-4 border-[#DC3545]`,
   };
 
-  const amountColor: Record<string, string> = {
+  const amountColor: Record<Variant, string> = {
     default: "text-[#0B2545]",
     dark: "text-white",
     income: "text-[#198754]",

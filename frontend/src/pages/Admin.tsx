@@ -94,7 +94,7 @@ export default function Admin() {
                           <XAxis
                             type="number"
                             tick={{ fontSize: 11, fill: '#6C757D' }}
-                            tickFormatter={v => `$${(v as number).toLocaleString()}`}
+                            tickFormatter={(v: number) => `$${v.toLocaleString()}`}
                             axisLine={false}
                             tickLine={false}
                           />

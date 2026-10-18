@@ -199,12 +199,12 @@ export default function ExpenseForm({
             "Payment Method",
             <select
               value={form.paymentMethod}
-              onChange={(e) =>
-                setForm((f) => ({
-                  ...f,
-                  paymentMethod: e.target.value as PaymentMethod,
-                }))
-              }
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                const val = e.target.value;
+                if ((PAYMENT_METHODS as string[]).includes(val)) {
+                  setForm((f) => ({ ...f, paymentMethod: val as PaymentMethod }));
+                }
+              }}
               className={`${inputCls} bg-white`}
             >
               {PAYMENT_METHODS.map((m) => (

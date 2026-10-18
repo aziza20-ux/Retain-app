@@ -1,4 +1,4 @@
-import type { Expense, Budget, BudgetWithCalc, BudgetStatus } from "../types";
+import type { Expense, Budget, BudgetWithCalc, BudgetStatus, PaymentMethod } from "../types";
 
 export function expenseInMonth(expense: Expense, monthIso: string): boolean {
   const d = new Date(expense.date);
@@ -60,7 +60,7 @@ export const STATUS_STYLES: Record<
   },
 };
 
-export const PM_LABEL: Record<string, string> = {
+export const PM_LABEL: Record<PaymentMethod, string> = {
   CASH: "Cash",
   CARD: "Card",
   MOBILE_MONEY: "Mobile Money",
