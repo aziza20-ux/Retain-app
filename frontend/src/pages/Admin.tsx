@@ -1,4 +1,8 @@
 import { useState, useEffect } from 'react';
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
+  ResponsiveContainer, PieChart, Pie, Cell, Legend,
+} from 'recharts';
 import Sidebar     from '../components/Sidebar';
 import SummaryCard from '../components/SummaryCard';
 import StatCard    from '../components/StatCard';
@@ -24,6 +28,8 @@ export default function Admin() {
   const thCls     = 'px-4 py-3 font-semibold text-[#6C757D] text-left';
   const tdCls     = 'px-4 py-3 text-sm text-[#6C757D]';
   const tdBoldCls = 'px-4 py-3 text-sm font-medium text-[#0B2545]';
+
+  const DONUT_COLORS = ['#0B2545', '#DC3545', '#198754', '#FFC107', '#0DCAF0'];
 
   return (
     <div className="flex h-screen overflow-hidden bg-[#F7F8FA]">
@@ -68,7 +74,7 @@ export default function Admin() {
               <h2 className="text-base font-semibold text-[#0B2545] mb-3">Category Analytics</h2>
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-                {/* Spending per category */}
+                {/* Spending per category — horizontal bar chart */}
                 <div className="lg:col-span-1 bg-white rounded-xl shadow-sm overflow-hidden">
                   <div className="px-4 py-3 border-b border-[#DEE2E6]">
                     <p className="text-sm font-semibold text-[#0B2545]">Spending by Category</p>
@@ -77,32 +83,41 @@ export default function Admin() {
                   {data.spendingByCategory.length === 0 ? (
                     <p className="px-4 py-6 text-sm text-[#6C757D] text-center">No expense data.</p>
                   ) : (
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-sm">
-                        <thead>
-                          <tr className="border-b border-[#DEE2E6]">
-                            <th className={thCls}>Category</th>
-                            <th className="px-4 py-3 font-semibold text-[#6C757D] text-right">Total Spent</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {data.spendingByCategory.map(cat => (
-                            <tr key={cat.categoryId} className="border-b border-[#DEE2E6] last:border-0 hover:bg-gray-50">
-                              <td className={tdBoldCls}>{cat.categoryName}</td>
-                              <td className="px-4 py-3 text-sm text-right font-semibold text-[#DC3545]">
-                                {parseFloat(cat.totalSpent) > 0
-                                  ? fmtCurrency(parseFloat(cat.totalSpent))
-                                  : <span className="text-[#6C757D] font-normal">—</span>}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                    <div className="px-2 py-4">
+                      <ResponsiveContainer width="100%" height={data.spendingByCategory.length * 44 + 16}>
+                        <BarChart
+                          layout="vertical"
+                          data={data.spendingByCategory.map(c => ({ name: c.categoryName, value: parseFloat(c.totalSpent) }))}
+                          margin={{ top: 0, right: 16, left: 8, bottom: 0 }}
+                        >
+                          <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#DEE2E6" />
+                          <XAxis
+                            type="number"
+                            tick={{ fontSize: 11, fill: '#6C757D' }}
+                            tickFormatter={v => `$${(v as number).toLocaleString()}`}
+                            axisLine={false}
+                            tickLine={false}
+                          />
+                          <YAxis
+                            type="category"
+                            dataKey="name"
+                            width={110}
+                            tick={{ fontSize: 11, fill: '#0B2545' }}
+                            axisLine={false}
+                            tickLine={false}
+                          />
+                          <Tooltip
+                            formatter={(v) => [fmtCurrency(Number(v)), 'Total Spent']}
+                            contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #DEE2E6' }}
+                          />
+                          <Bar dataKey="value" fill="#DC3545" radius={[0, 4, 4, 0]} maxBarSize={20} />
+                        </BarChart>
+                      </ResponsiveContainer>
                     </div>
                   )}
                 </div>
 
-                {/* Top 5 most-used */}
+                {/* Top 5 most-used — doughnut chart */}
                 <div className="bg-white rounded-xl shadow-sm overflow-hidden">
                   <div className="px-4 py-3 border-b border-[#DEE2E6]">
                     <p className="text-sm font-semibold text-[#0B2545]">Top 5 Most-Used Categories</p>
@@ -111,30 +126,38 @@ export default function Admin() {
                   {data.topCategories.length === 0 ? (
                     <p className="px-4 py-6 text-sm text-[#6C757D] text-center">No data.</p>
                   ) : (
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-sm">
-                        <thead>
-                          <tr className="border-b border-[#DEE2E6]">
-                            <th className="px-4 py-3 font-semibold text-[#6C757D] text-center w-10">#</th>
-                            <th className={thCls}>Category</th>
-                            <th className="px-4 py-3 font-semibold text-[#6C757D] text-right">Expenses</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {data.topCategories.map((cat, i) => (
-                            <tr key={cat.categoryId} className="border-b border-[#DEE2E6] last:border-0 hover:bg-gray-50">
-                              <td className="px-4 py-3 text-center text-xs font-bold text-[#0B2545]">{i + 1}</td>
-                              <td className={tdBoldCls}>{cat.categoryName}</td>
-                              <td className="px-4 py-3 text-right font-semibold text-[#0B2545]">{cat.expenseCount}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                    <div className="px-2 py-4">
+                      <ResponsiveContainer width="100%" height={220}>
+                        <PieChart>
+                          <Pie
+                            data={data.topCategories.slice(0, 5).map(c => ({ name: c.categoryName, value: c.expenseCount }))}
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={55}
+                            outerRadius={85}
+                            paddingAngle={3}
+                            dataKey="value"
+                          >
+                            {data.topCategories.slice(0, 5).map((_, i) => (
+                              <Cell key={i} fill={DONUT_COLORS[i % DONUT_COLORS.length]} />
+                            ))}
+                          </Pie>
+                          <Tooltip
+                            formatter={(v) => [Number(v), 'Expenses']}
+                            contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #DEE2E6' }}
+                          />
+                          <Legend
+                            iconType="circle"
+                            iconSize={8}
+                            formatter={v => <span style={{ fontSize: 11, color: '#0B2545' }}>{v}</span>}
+                          />
+                        </PieChart>
+                      </ResponsiveContainer>
                     </div>
                   )}
                 </div>
 
-                {/* Bottom 5 least-used */}
+                {/* Bottom 5 least-used — vertical bar chart */}
                 <div className="bg-white rounded-xl shadow-sm overflow-hidden">
                   <div className="px-4 py-3 border-b border-[#DEE2E6]">
                     <p className="text-sm font-semibold text-[#0B2545]">Bottom 5 Least-Used Categories</p>
@@ -143,23 +166,35 @@ export default function Admin() {
                   {data.bottomCategories.length === 0 ? (
                     <p className="px-4 py-6 text-sm text-[#6C757D] text-center">No data.</p>
                   ) : (
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-sm">
-                        <thead>
-                          <tr className="border-b border-[#DEE2E6]">
-                            <th className={thCls}>Category</th>
-                            <th className="px-4 py-3 font-semibold text-[#6C757D] text-right">Expenses</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {data.bottomCategories.map(cat => (
-                            <tr key={cat.categoryId} className="border-b border-[#DEE2E6] last:border-0 hover:bg-gray-50">
-                              <td className={tdBoldCls}>{cat.categoryName}</td>
-                              <td className="px-4 py-3 text-right text-[#6C757D]">{cat.expenseCount}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                    <div className="px-2 py-4">
+                      <ResponsiveContainer width="100%" height={220}>
+                        <BarChart
+                          data={data.bottomCategories.slice(0, 5).map(c => ({ name: c.categoryName, value: c.expenseCount }))}
+                          margin={{ top: 4, right: 8, left: -16, bottom: 40 }}
+                        >
+                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#DEE2E6" />
+                          <XAxis
+                            dataKey="name"
+                            tick={{ fontSize: 10, fill: '#6C757D' }}
+                            angle={-35}
+                            textAnchor="end"
+                            interval={0}
+                            axisLine={false}
+                            tickLine={false}
+                          />
+                          <YAxis
+                            allowDecimals={false}
+                            tick={{ fontSize: 11, fill: '#6C757D' }}
+                            axisLine={false}
+                            tickLine={false}
+                          />
+                          <Tooltip
+                            formatter={(v) => [Number(v), 'Expenses']}
+                            contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #DEE2E6' }}
+                          />
+                          <Bar dataKey="value" fill="#0B2545" radius={[4, 4, 0, 0]} maxBarSize={36} />
+                        </BarChart>
+                      </ResponsiveContainer>
                     </div>
                   )}
                 </div>
