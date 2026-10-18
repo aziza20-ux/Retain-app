@@ -1,6 +1,5 @@
 import "dotenv/config";
 import bcrypt from "bcrypt";
-import { randomUUID } from "crypto";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../src/generated/prisma/client.ts";
 
@@ -22,7 +21,6 @@ async function main() {
     },
   });
 
-  console.log(`Admin user ready: ${admin.email}`);
 
   // --- Default categories ---
   const categories = [

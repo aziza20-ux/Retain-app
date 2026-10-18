@@ -29,16 +29,14 @@ export default function Sidebar() {
 
   return (
     <>
-      {/* Mobile top bar */}
-      <div className="md:hidden flex items-center justify-between px-4 py-3 bg-[#2D2D2D]">
-        <span className="text-white font-bold text-lg tracking-wide">
-          Retain
-        </span>
+      {/* Mobile top bar — icon only, pinned to top */}
+      <div className="md:hidden flex items-start justify-end px-4 pt-3 pb-2 bg-[#2D2D2D]">
         <button
           onClick={() => setMobileOpen(!mobileOpen)}
+          aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
           className="text-white text-2xl leading-none"
         >
-          {mobileOpen ? "✕" : "☰"}
+          {mobileOpen ? '✕' : '☰'}
         </button>
       </div>
 

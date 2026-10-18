@@ -6,7 +6,7 @@ import {
   useCallback,
   type ReactNode,
 } from "react";
-import type { Expense, Budget, BudgetWithCalc, Category } from "../types";
+import type { Expense, BudgetWithCalc, Category } from "../types";
 import { expenseApi, type ExpensePayload } from "../api/expense.api";
 import { budgetApi, type BudgetCalc } from "../api/budget.api";
 import { categoryApi } from "../api/category.api";

@@ -15,13 +15,13 @@ export const mockCategories: Category[] = [
 ];
 
 export const mockUsers: User[] = [
-  { id: 'user-1', name: 'Alex Johnson',   email: 'alex@example.com',    password: 'password123', role: 'USER',  createdAt: '2025-06-15T09:00:00.000Z' },
-  { id: 'user-2', name: 'Admin User',     email: 'admin@retain.app',    password: 'Admin@1234',  role: 'ADMIN', createdAt: '2025-06-01T08:00:00.000Z' },
-  { id: 'user-3', name: 'Maria Santos',   email: 'maria@example.com',   password: 'pass1234',    role: 'USER',  createdAt: '2025-07-10T11:30:00.000Z' },
-  { id: 'user-4', name: 'James Okafor',   email: 'james@example.com',   password: 'pass1234',    role: 'USER',  createdAt: '2025-07-18T14:00:00.000Z' },
-  { id: 'user-5', name: 'Priya Nair',     email: 'priya@example.com',   password: 'pass1234',    role: 'USER',  createdAt: '2025-07-22T09:15:00.000Z' },
-  { id: 'user-6', name: 'Chen Wei',       email: 'chen@example.com',    password: 'pass1234',    role: 'USER',  createdAt: '2025-07-25T16:45:00.000Z' },
-  { id: 'user-7', name: 'Sofia Andersen', email: 'sofia@example.com',   password: 'pass1234',    role: 'USER',  createdAt: '2025-07-28T08:00:00.000Z' },
+  { id: 'user-1', name: 'Alex Johnson',   email: 'alex@example.com',    role: 'USER',  createdAt: '2025-06-15T09:00:00.000Z' },
+  { id: 'user-2', name: 'Admin User',     email: 'admin@retain.app',    role: 'ADMIN', createdAt: '2025-06-01T08:00:00.000Z' },
+  { id: 'user-3', name: 'Maria Santos',   email: 'maria@example.com',   role: 'USER',  createdAt: '2025-07-10T11:30:00.000Z' },
+  { id: 'user-4', name: 'James Okafor',   email: 'james@example.com',   role: 'USER',  createdAt: '2025-07-18T14:00:00.000Z' },
+  { id: 'user-5', name: 'Priya Nair',     email: 'priya@example.com',   role: 'USER',  createdAt: '2025-07-22T09:15:00.000Z' },
+  { id: 'user-6', name: 'Chen Wei',       email: 'chen@example.com',    role: 'USER',  createdAt: '2025-07-25T16:45:00.000Z' },
+  { id: 'user-7', name: 'Sofia Andersen', email: 'sofia@example.com',   role: 'USER',  createdAt: '2025-07-28T08:00:00.000Z' },
 ];
 
 export const mockExpenses: Expense[] = [
