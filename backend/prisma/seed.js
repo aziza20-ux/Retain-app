@@ -3,11 +3,13 @@ import bcrypt from "bcrypt";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../src/generated/prisma/client.ts";
 
+// Connect directly to the database using the same adapter pattern as the app.
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
   // --- Admin user ---
+  // upsert means re-running the seed is safe — it won't create a duplicate admin.
   const passwordHash = await bcrypt.hash("Admin@1234", 12);
 
   const admin = await prisma.user.upsert({
@@ -23,6 +25,7 @@ async function main() {
 
 
   // --- Default categories ---
+  // upsert by name so the seed can be run multiple times without creating duplicates.
   const categories = [
     { name: "Uncategorized", description: "Default fallback category" },
     {

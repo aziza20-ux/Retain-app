@@ -19,6 +19,7 @@ export const createCategorySchema = z
   })
   .strict();
 
+// Both fields are optional for updates; at least one must be provided.
 export const updateCategorySchema = z
   .object({
     name: nameField.optional(),

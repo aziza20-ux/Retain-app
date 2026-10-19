@@ -6,15 +6,18 @@ import jwt from "jsonwebtoken";
 const isAuthenticated = (req, res, next) => {
   const authHeader = req.headers.authorization;
 
+  // Reject requests that are missing the Authorization header or use a non-Bearer scheme.
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
     return res.status(401).json({ message: "Authentication required" });
   }
 
+  // Strip the "Bearer " prefix to get the raw token string.
   const token = authHeader.slice(7);
 
   try {
     const payload = jwt.verify(token, process.env.JWT_SECRET);
 
+    // Attach only the fields controllers need — never expose the full payload.
     req.user = { id: payload.sub, role: payload.role };
     next();
   } catch {

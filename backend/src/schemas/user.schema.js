@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+// Reusable field definitions shared between register and login schemas.
 const emailField = z
   .string()
   .trim()

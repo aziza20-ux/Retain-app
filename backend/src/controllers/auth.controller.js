@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import { prisma } from "../config/prisma.config.js";
 import { registerSchema, loginSchema } from "../schemas/user.schema.js";
 
+// Strip sensitive fields before sending a user object in any response.
 const safeUser = (user) => ({
   id: user.id,
   name: user.name,
@@ -27,11 +28,13 @@ export const register = async (req, res, next) => {
 
     const { name, email, password } = result.data;
 
+    // Prevent duplicate accounts for the same email address.
     const existing = await prisma.user.findUnique({ where: { email } });
     if (existing) {
       return res.status(409).json({ message: "Email is already registered" });
     }
 
+    // Hash the password with a cost factor of 12 before storing it.
     const passwordHash = await bcrypt.hash(password, 12);
 
     const user = await prisma.user.create({
@@ -60,6 +63,7 @@ export const login = async (req, res, next) => {
     const { email, password } = result.data;
 
     const user = await prisma.user.findUnique({ where: { email } });
+    // Always run bcrypt.compare even when the user doesn't exist to prevent timing attacks.
     const passwordMatch = user
       ? await bcrypt.compare(password, user.passwordHash)
       : false;
@@ -68,6 +72,7 @@ export const login = async (req, res, next) => {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
+    // Sign a JWT containing the user's ID and role; expires in 7 days.
     const token = jwt.sign(
       { sub: user.id, role: user.role },
       process.env.JWT_SECRET,
@@ -89,6 +94,7 @@ export const logout = (req, res) => {
 // GET /auth/me  — requires isAuthenticated middleware
 export const getMe = async (req, res, next) => {
   try {
+    // Re-fetch from the database so the response always reflects the latest user state.
     const user = await prisma.user.findUnique({ where: { id: req.user.id } });
 
     if (!user) {

@@ -24,6 +24,7 @@ export const createExpense = async (req, res, next) => {
     const { title, amount, date, paymentMethod, categoryId, notes } =
       result.data;
 
+    // Verify the category exists before creating the expense.
     const category = await prisma.category.findUnique({
       where: { id: categoryId },
     });
@@ -75,15 +76,18 @@ export const getExpenses = async (req, res, next) => {
       limit,
     } = result.data;
 
+    // Always scope results to the authenticated user.
     const where = { userId: req.user.id };
 
     if (categoryId) where.categoryId = categoryId;
     if (paymentMethod) where.paymentMethod = paymentMethod;
+    // Build a date range filter only when at least one bound is provided.
     if (startDate || endDate) {
       where.date = {};
       if (startDate) where.date.gte = startDate;
       if (endDate) where.date.lte = endDate;
     }
+    // Full-text search across both title and notes fields.
     if (search) {
       where.OR = [
         { title: { contains: search, mode: "insensitive" } },
@@ -93,6 +97,7 @@ export const getExpenses = async (req, res, next) => {
 
     const skip = (page - 1) * limit;
 
+    // Fetch the page of results and the total count in a single round-trip.
     const [expenses, total] = await Promise.all([
       prisma.expense.findMany({
         where,
@@ -131,6 +136,7 @@ export const getExpenseById = async (req, res, next) => {
       include: { category: true },
     });
 
+    // Return 404 for both missing records and records owned by another user.
     if (!expense || expense.userId !== req.user.id) {
       return res.status(404).json({ message: "Expense not found" });
     }
@@ -159,6 +165,7 @@ export const updateExpense = async (req, res, next) => {
         });
     }
 
+    // Confirm ownership before allowing the update.
     const existing = await prisma.expense.findUnique({
       where: { id: idResult.data.id },
     });
@@ -166,6 +173,7 @@ export const updateExpense = async (req, res, next) => {
       return res.status(404).json({ message: "Expense not found" });
     }
 
+    // If the category is being changed, verify the new category exists.
     if (bodyResult.data.categoryId) {
       const category = await prisma.category.findUnique({
         where: { id: bodyResult.data.categoryId },
@@ -195,6 +203,7 @@ export const deleteExpense = async (req, res, next) => {
       return res.status(400).json({ message: "Invalid expense ID" });
     }
 
+    // Confirm ownership before allowing the deletion.
     const existing = await prisma.expense.findUnique({
       where: { id: idResult.data.id },
     });

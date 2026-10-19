@@ -1,10 +1,12 @@
 import { z } from "zod";
 
+// Coerce the amount directly to a number so both string and numeric inputs are accepted.
 const amountField = z.coerce
   .number({ invalid_type_error: "Amount must be a number" })
   .positive("Budget amount must be a positive number")
   .finite("Budget amount must be a finite number");
 
+// Accept an ISO 8601 string and transform it to a JS Date for normalization downstream.
 const monthField = z
   .string()
   .datetime({ message: "month must be a valid ISO 8601 datetime string" })
@@ -17,6 +19,7 @@ export const createBudgetSchema = z
   })
   .strict();
 
+// Only the amount can be updated — the month of a budget is immutable after creation.
 export const updateBudgetSchema = z
   .object({
     amount: amountField,
@@ -50,6 +53,7 @@ export const budgetQuerySchema = z
       .transform((val) => new Date(val))
       .optional(),
   })
+  // Ensure the month range is logically valid before querying the database.
   .refine(
     (data) => {
       if (data.startMonth && data.endMonth) {

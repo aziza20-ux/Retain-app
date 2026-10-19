@@ -14,6 +14,7 @@ const titleField = z
   .min(1, "Title is required")
   .max(200, "Title must be at most 200 characters");
 
+// Accept both string and number inputs from the request body, then coerce to a number.
 const amountField = z
   .union([z.string(), z.number()])
   .transform((val) => Number(val))
@@ -38,6 +39,7 @@ const notesField = z
 
 const categoryIdField = z.string().uuid("Invalid category ID");
 
+// Reject expenses dated in the future using a UTC calendar-day comparison.
 export const createExpenseSchema = z
   .object({
     title: titleField,
@@ -57,6 +59,7 @@ export const createExpenseSchema = z
     { message: "Expense date cannot be in the future", path: ["date"] },
   );
 
+// All fields are optional for updates; at least one must be provided.
 export const updateExpenseSchema = z
   .object({
     title: titleField.optional(),
@@ -75,6 +78,7 @@ export const expenseIdSchema = z.object({
   id: z.string().uuid("Invalid expense ID"),
 });
 
+// Coerce pagination query string values (always strings from the URL) to integers.
 const positiveIntString = z
   .string()
   .regex(/^\d+$/, "Must be a positive integer")
@@ -116,6 +120,7 @@ export const expenseQuerySchema = z
       .pipe(z.number().int().positive().max(100, "Maximum page size is 100"))
       .default("20"),
   })
+  // Ensure the date range is logically valid before hitting the database.
   .refine(
     (data) => {
       if (data.startDate && data.endDate) {
