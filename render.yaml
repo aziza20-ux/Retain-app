@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: retain-backend
+    runtime: node
+    region: oregon
+    rootDir: backend
+    buildCommand: npm install && npx prisma generate --config prisma7.config.ts && npx prisma migrate deploy --config prisma7.config.ts
+    startCommand: npm start
+    envVars:
+      - key: NODE_VERSION
+        value: 22.6.0
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: CLIENT_URL
+        sync: false
+      - key: PORT
+        value: 3001
