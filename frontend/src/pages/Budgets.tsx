@@ -11,7 +11,7 @@ type FormState = { amount: string; month: string };
 const emptyForm = (): FormState => ({ amount: '', month: toMonthKey(new Date().toISOString()) });
 
 export default function Budgets() {
-  const { budgets, addBudget, updateBudget, deleteBudget } = useAppData();
+  const { budgets, addBudget, updateBudget, deleteBudget, loading } = useAppData();
   const { user }  = useAuth();
   const userId    = user?.id ?? '';
 
@@ -20,6 +20,7 @@ export default function Budgets() {
   const [form,      setForm]      = useState<FormState>(emptyForm());
   const [formError, setFormError] = useState('');
   const [deleteId,  setDeleteId]  = useState<string | null>(null);
+  const [deleting,  setDeleting]  = useState(false);
   const [saving,    setSaving]    = useState(false);
   const [toast,     setToast]     = useState('');
   const dismissToast = useCallback(() => setToast(''), []);
@@ -71,7 +72,10 @@ export default function Budgets() {
 
   const confirmDelete = async () => {
     if (!deleteId) return;
-    try { await deleteBudget(deleteId); setToast('Budget deleted successfully.'); } catch { /* ignore */ }
+    setDeleting(true);
+    try { await deleteBudget(deleteId); setToast('Budget deleted successfully.'); } catch { /* ignore */ } finally {
+      setDeleting(false);
+    }
     setDeleteId(null);
   };
 
@@ -96,7 +100,11 @@ export default function Budgets() {
         </div>
 
         <div className="px-6 py-6">
-          {userBudgets.length === 0 ? (
+          {loading ? (
+            <div className="bg-white rounded-xl shadow-sm p-12 text-center">
+              <p className="text-sm text-[#6C757D]">Loading…</p>
+            </div>
+          ) : userBudgets.length === 0 ? (
             <div className="bg-white rounded-xl shadow-sm p-12 text-center">
               <p className="text-4xl mb-3">💰</p>
               <p className="text-[#0B2545] font-medium">No budgets yet</p>
@@ -183,9 +191,10 @@ export default function Budgets() {
               </button>
               <button
                 onClick={confirmDelete}
-                className="flex-1 py-2 bg-[#DC3545] text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors"
+                disabled={deleting}
+                className="flex-1 py-2 bg-[#DC3545] text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors disabled:opacity-60"
               >
-                Delete
+                {deleting ? 'Deleting…' : 'Delete'}
               </button>
             </div>
           </div>

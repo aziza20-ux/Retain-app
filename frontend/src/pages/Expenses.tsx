@@ -14,7 +14,7 @@ import type { Expense } from '../types';
 const PAGE_SIZE = 10;
 
 export default function Expenses() {
-  const { expenses, addExpense, updateExpense, deleteExpense, categories } = useAppData();
+  const { expenses, addExpense, updateExpense, deleteExpense, categories, loading } = useAppData();
   const { user }    = useAuth();
   const dispatch    = useAppDispatch();
   const filters     = useAppSelector(s => s.expenseFilter);
@@ -24,6 +24,7 @@ export default function Expenses() {
   const [editing,   setEditing]   = useState<Expense | null>(null);
   const [detailExp, setDetailExp] = useState<Expense | null>(null);
   const [deleteId,  setDeleteId]  = useState<string | null>(null);
+  const [deleting,  setDeleting]  = useState(false);
   const [saving,    setSaving]    = useState(false);
   const [formError, setFormError] = useState('');
   const [toast,     setToast]     = useState('');
@@ -93,10 +94,13 @@ export default function Expenses() {
 
   const confirmDelete = async () => {
     if (!deleteId) return;
+    setDeleting(true);
     try {
       await deleteExpense(deleteId);
       setToast('Expense deleted successfully.');
-    } catch { /* ignore */ }
+    } catch { /* ignore */ } finally {
+      setDeleting(false);
+    }
     setDeleteId(null);
   };
 
@@ -120,79 +124,87 @@ export default function Expenses() {
 
         <div className="px-6 py-6 space-y-4">
           <ExpenseFilters categories={categories} />
-          <ExpenseList
-            expenses={paginated}
-            categories={categories}
-            onView={setDetailExp}
-            onEdit={openEdit}
-            onDelete={setDeleteId}
-          />
-          {/* Pagination controls */}
-          {filtered.length > 0 && (
-            <div className="flex flex-col sm:flex-row items-center justify-between bg-white rounded-xl shadow-sm px-4 py-3 gap-2">
-              <p className="text-sm text-[#6C757D]">
-                Showing {pageStart + 1}–{Math.min(pageStart + PAGE_SIZE, filtered.length)} of {filtered.length}
-              </p>
-              <div className="flex items-center gap-1">
-                <button
-                  onClick={() => dispatch(setPage(1))}
-                  disabled={safePage === 1}
-                  className="px-2 py-1 text-sm rounded-lg border border-[#DEE2E6] text-[#6C757D] hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                  aria-label="First page"
-                >
-                  «
-                </button>
-                <button
-                  onClick={() => dispatch(setPage(safePage - 1))}
-                  disabled={safePage === 1}
-                  className="px-2 py-1 text-sm rounded-lg border border-[#DEE2E6] text-[#6C757D] hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                  aria-label="Previous page"
-                >
-                  ‹
-                </button>
-                {Array.from({ length: totalPages }, (_, i) => i + 1)
-                  .filter(p => p === 1 || p === totalPages || Math.abs(p - safePage) <= 1)
-                  .reduce<(number | 'ellipsis')[]>((acc, p, idx, arr) => {
-                    if (idx > 0 && p - (arr[idx - 1] as number) > 1) acc.push('ellipsis');
-                    acc.push(p);
-                    return acc;
-                  }, [])
-                  .map((item, idx) =>
-                    item === 'ellipsis' ? (
-                      <span key={`ellipsis-${idx}`} className="px-2 py-1 text-sm text-[#6C757D]">…</span>
-                    ) : (
-                      <button
-                        key={item}
-                        onClick={() => dispatch(setPage(item))}
-                        className={`px-3 py-1 text-sm rounded-lg border transition-colors ${
-                          item === safePage
-                            ? 'bg-[#0B2545] text-white border-[#0B2545]'
-                            : 'border-[#DEE2E6] text-[#6C757D] hover:bg-gray-50'
-                        }`}
-                      >
-                        {item}
-                      </button>
-                    )
-                  )
-                }
-                <button
-                  onClick={() => dispatch(setPage(safePage + 1))}
-                  disabled={safePage === totalPages}
-                  className="px-2 py-1 text-sm rounded-lg border border-[#DEE2E6] text-[#6C757D] hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                  aria-label="Next page"
-                >
-                  ›
-                </button>
-                <button
-                  onClick={() => dispatch(setPage(totalPages))}
-                  disabled={safePage === totalPages}
-                  className="px-2 py-1 text-sm rounded-lg border border-[#DEE2E6] text-[#6C757D] hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                  aria-label="Last page"
-                >
-                  »
-                </button>
-              </div>
+          {loading ? (
+            <div className="bg-white rounded-xl shadow-sm p-12 text-center">
+              <p className="text-sm text-[#6C757D]">Loading expenses…</p>
             </div>
+          ) : (
+            <>
+              <ExpenseList
+                expenses={paginated}
+                categories={categories}
+                onView={setDetailExp}
+                onEdit={openEdit}
+                onDelete={setDeleteId}
+              />
+              {/* Pagination controls */}
+              {filtered.length > 0 && (
+                <div className="flex flex-col sm:flex-row items-center justify-between bg-white rounded-xl shadow-sm px-4 py-3 gap-2">
+                  <p className="text-sm text-[#6C757D]">
+                    Showing {pageStart + 1}–{Math.min(pageStart + PAGE_SIZE, filtered.length)} of {filtered.length}
+                  </p>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => dispatch(setPage(1))}
+                      disabled={safePage === 1}
+                      className="px-2 py-1 text-sm rounded-lg border border-[#DEE2E6] text-[#6C757D] hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                      aria-label="First page"
+                    >
+                      «
+                    </button>
+                    <button
+                      onClick={() => dispatch(setPage(safePage - 1))}
+                      disabled={safePage === 1}
+                      className="px-2 py-1 text-sm rounded-lg border border-[#DEE2E6] text-[#6C757D] hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                      aria-label="Previous page"
+                    >
+                      ‹
+                    </button>
+                    {Array.from({ length: totalPages }, (_, i) => i + 1)
+                      .filter(p => p === 1 || p === totalPages || Math.abs(p - safePage) <= 1)
+                      .reduce<(number | 'ellipsis')[]>((acc, p, idx, arr) => {
+                        if (idx > 0 && p - (arr[idx - 1] as number) > 1) acc.push('ellipsis');
+                        acc.push(p);
+                        return acc;
+                      }, [])
+                      .map((item, idx) =>
+                        item === 'ellipsis' ? (
+                          <span key={`ellipsis-${idx}`} className="px-2 py-1 text-sm text-[#6C757D]">…</span>
+                        ) : (
+                          <button
+                            key={item}
+                            onClick={() => dispatch(setPage(item))}
+                            className={`px-3 py-1 text-sm rounded-lg border transition-colors ${
+                              item === safePage
+                                ? 'bg-[#0B2545] text-white border-[#0B2545]'
+                                : 'border-[#DEE2E6] text-[#6C757D] hover:bg-gray-50'
+                            }`}
+                          >
+                            {item}
+                          </button>
+                        )
+                      )
+                    }
+                    <button
+                      onClick={() => dispatch(setPage(safePage + 1))}
+                      disabled={safePage === totalPages}
+                      className="px-2 py-1 text-sm rounded-lg border border-[#DEE2E6] text-[#6C757D] hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                      aria-label="Next page"
+                    >
+                      ›
+                    </button>
+                    <button
+                      onClick={() => dispatch(setPage(totalPages))}
+                      disabled={safePage === totalPages}
+                      className="px-2 py-1 text-sm rounded-lg border border-[#DEE2E6] text-[#6C757D] hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                      aria-label="Last page"
+                    >
+                      »
+                    </button>
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </div>
       </main>
@@ -234,9 +246,10 @@ export default function Expenses() {
               </button>
               <button
                 onClick={confirmDelete}
-                className="flex-1 py-2 bg-[#DC3545] text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors"
+                disabled={deleting}
+                className="flex-1 py-2 bg-[#DC3545] text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors disabled:opacity-60"
               >
-                Delete
+                {deleting ? 'Deleting…' : 'Delete'}
               </button>
             </div>
           </div>

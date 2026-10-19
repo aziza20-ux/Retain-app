@@ -12,25 +12,29 @@ export default function AdminCategories() {
   const { categories, addCategory, updateCategory, deleteCategory, loading, error } = useAppData();
 
   const [countMap,   setCountMap]   = useState<Map<string, number>>(new Map());
+  const [countLoading, setCountLoading] = useState(true);
   const [showModal,  setShowModal]  = useState(false);
   const [editing,    setEditing]    = useState<Category | null>(null);
   const [form,       setForm]       = useState<FormState>(emptyForm());
   const [formError,  setFormError]  = useState('');
   const [toast,      setToast]      = useState('');
   const [deleteId,   setDeleteId]   = useState<string | null>(null);
+  const [deleting,   setDeleting]   = useState(false);
   const [saving,     setSaving]     = useState(false);
   const dismissToast = useCallback(() => setToast(''), []);
 
   // Fetch platform-wide expense counts per category from admin insights.
   // Re-runs when categories change (e.g. after add/delete) to keep counts fresh.
   useEffect(() => {
+    setCountLoading(true);
     adminApi.insights()
       .then(res => {
         const map = new Map<string, number>();
         res.data.spendingByCategory.forEach(c => map.set(c.categoryId, c.expenseCount));
         setCountMap(map);
       })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setCountLoading(false));
   }, [categories]);
 
   const expenseCount = (catId: string) => countMap.get(catId) ?? 0;
@@ -79,11 +83,14 @@ export default function AdminCategories() {
   const confirmDelete = async () => {
     if (!deleteId) return;
     const cat = categories.find(c => c.id === deleteId);
+    setDeleting(true);
     try {
       await deleteCategory(deleteId);
       setToast(`"${cat?.name}" deleted. Affected expenses moved to Uncategorized.`);
     } catch (err: unknown) {
       setFormError(err instanceof Error ? err.message : 'Failed to delete category.');
+    } finally {
+      setDeleting(false);
     }
     setDeleteId(null);
   };
@@ -143,7 +150,9 @@ export default function AdminCategories() {
                           )}
                         </td>
                         <td className={tdCls}>{cat.description || '—'}</td>
-                        <td className="px-4 py-3 text-center text-[#6C757D]">{expenseCount(cat.id)}</td>
+                        <td className="px-4 py-3 text-center text-[#6C757D]">
+                          {countLoading ? '…' : expenseCount(cat.id)}
+                        </td>
                         <td className="px-4 py-3 text-center">
                           <button
                             onClick={() => openEdit(cat)}
@@ -241,9 +250,10 @@ export default function AdminCategories() {
               </button>
               <button
                 onClick={confirmDelete}
-                className="flex-1 py-2 bg-[#DC3545] text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors"
+                disabled={deleting}
+                className="flex-1 py-2 bg-[#DC3545] text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors disabled:opacity-60"
               >
-                Delete
+                {deleting ? 'Deleting…' : 'Delete'}
               </button>
             </div>
           </div>

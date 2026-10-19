@@ -9,7 +9,7 @@ import {
 } from '../utils/budgetUtils';
 
 export default function Dashboard() {
-  const { expenses, budgets, categories } = useAppData();
+  const { expenses, budgets, categories, loading } = useAppData();
   const { user } = useAuth();
   const userId = user?.id ?? '';
 
@@ -73,6 +73,12 @@ export default function Dashboard() {
         </div>
 
         <div className="px-6 py-6 space-y-6">
+          {loading ? (
+            <div className="bg-white rounded-xl shadow-sm p-12 text-center">
+              <p className="text-sm text-[#6C757D]">Loading…</p>
+            </div>
+          ) : (
+          <>
           {/* Summary cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <SummaryCard title="Total Spent"       amount={totalSpent}                variant="expense" />
@@ -161,6 +167,8 @@ export default function Dashboard() {
               )}
             </div>
           </div>
+          </>
+          )}
         </div>
       </main>
     </div>
