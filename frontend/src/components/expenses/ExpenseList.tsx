@@ -1,4 +1,4 @@
-import { PM_LABEL, formatDate } from "../../utils/budgetUtils";
+import { PM_LABEL, formatDate, formatRWF } from "../../utils/budgetUtils";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
 import { setSortField, setSortDir } from "../../redux/expenseFilterSlice";
 import type { Category, Expense, SortField } from "../../types";
@@ -107,7 +107,7 @@ export default function ExpenseList({
                   {PM_LABEL[exp.paymentMethod] ?? exp.paymentMethod}
                 </td>
                 <td className="px-4 py-3 text-right font-semibold text-[#DC3545]">
-                  -${exp.amount.toFixed(2)}
+                  -{formatRWF(exp.amount)}
                 </td>
                 <td className="px-4 py-3 text-center">
                   <button

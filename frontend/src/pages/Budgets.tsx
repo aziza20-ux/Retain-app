@@ -139,7 +139,7 @@ export default function Budgets() {
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-[#0B2545] mb-1">Budget Amount ($)</label>
+                <label className="block text-xs font-medium text-[#0B2545] mb-1">Budget Amount (RWF)</label>
                 <input
                   type="number" min="0.01" step="0.01" value={form.amount}
                   onChange={e => setForm(f => ({ ...f, amount: e.target.value }))}

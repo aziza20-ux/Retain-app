@@ -152,7 +152,7 @@ export default function ExpenseForm({
 
           <div className="grid grid-cols-2 gap-3">
             {field(
-              "Amount ($)",
+              "Amount (RWF)",
               <input
                 type="number"
                 min="0.01"

@@ -68,6 +68,10 @@ export const PM_LABEL: Record<PaymentMethod, string> = {
   OTHER: "Other",
 };
 
+export function formatRWF(amount: number): string {
+  return `${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} RWF`;
+}
+
 export function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString("en-US", {
     month: "short",

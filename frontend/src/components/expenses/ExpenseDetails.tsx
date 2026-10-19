@@ -1,4 +1,4 @@
-import { PM_LABEL, formatDate } from "../../utils/budgetUtils";
+import { PM_LABEL, formatDate, formatRWF } from "../../utils/budgetUtils";
 import type { Category, Expense } from "../../types";
 
 interface ExpenseDetailsProps {
@@ -21,7 +21,7 @@ export default function ExpenseDetails({
 
   const rows: [string, string][] = [
     ["Title", expense.title],
-    ["Amount", `$${expense.amount.toFixed(2)}`],
+    ["Amount", formatRWF(expense.amount)],
     ["Date", formatDate(expense.date)],
     ["Category", getCategoryName(expense.categoryId)],
     [

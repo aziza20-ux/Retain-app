@@ -37,11 +37,10 @@ export default function SummaryCard({
         {title}
       </p>
       <p className={`text-2xl font-bold ${amountColor[variant]}`}>
-        $
         {amount.toLocaleString("en-US", {
           minimumFractionDigits: 2,
           maximumFractionDigits: 2,
-        })}
+        })} RWF
       </p>
       {subtitle && (
         <p

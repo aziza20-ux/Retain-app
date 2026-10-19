@@ -1,4 +1,4 @@
-import { STATUS_STYLES, formatMonth } from "../../utils/budgetUtils";
+import { STATUS_STYLES, formatMonth, formatRWF } from "../../utils/budgetUtils";
 import type { BudgetWithCalc } from "../../types";
 
 interface BudgetCardProps {
@@ -61,13 +61,13 @@ export default function BudgetCard({
         <div>
           <p className="text-xs text-[#6C757D]">Budget</p>
           <p className="text-sm font-semibold text-[#0B2545]">
-            ${budget.amount.toFixed(2)}
+            {formatRWF(budget.amount)}
           </p>
         </div>
         <div>
           <p className="text-xs text-[#6C757D]">Spent</p>
           <p className={`text-sm font-semibold ${s.textColor}`}>
-            ${budget.totalSpent.toFixed(2)}
+            {formatRWF(budget.totalSpent)}
           </p>
         </div>
         <div>
@@ -75,7 +75,7 @@ export default function BudgetCard({
           <p
             className={`text-sm font-semibold ${budget.remaining < 0 ? "text-[#DC3545]" : "text-[#198754]"}`}
           >
-            ${Math.abs(budget.remaining).toFixed(2)}
+            {formatRWF(Math.abs(budget.remaining))}
             {budget.remaining < 0 ? " over" : ""}
           </p>
         </div>

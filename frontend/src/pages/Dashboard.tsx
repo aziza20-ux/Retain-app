@@ -5,7 +5,7 @@ import { useAppData } from '../context/AppDataContext';
 import { useAuth } from '../context/AuthContext';
 import {
   expenseInMonth, STATUS_STYLES,
-  formatDate, formatMonth, toMonthKey, monthKeyToIso,
+  formatDate, formatMonth, toMonthKey, monthKeyToIso, formatRWF,
 } from '../utils/budgetUtils';
 
 export default function Dashboard() {
@@ -102,8 +102,8 @@ export default function Dashboard() {
                 />
               </div>
               <div className="flex justify-between text-xs text-[#6C757D]">
-                <span>${budget.totalSpent.toFixed(2)} spent</span>
-                <span>{budget.utilisation.toFixed(1)}% of ${budget.amount.toFixed(2)}</span>
+                <span>{formatRWF(budget.totalSpent)} spent</span>
+                <span>{budget.utilisation.toFixed(1)}% of {formatRWF(budget.amount)}</span>
               </div>
             </div>
           )}
@@ -125,7 +125,7 @@ export default function Dashboard() {
                         </p>
                       </div>
                       <span className="text-sm font-semibold text-[#DC3545]">
-                        -${exp.amount.toFixed(2)}
+                        -{formatRWF(exp.amount)}
                       </span>
                     </div>
                   ))}
@@ -146,7 +146,7 @@ export default function Dashboard() {
                       <div key={cat.id}>
                         <div className="flex justify-between text-sm mb-1">
                           <span className="font-medium text-[#0B2545]">{cat.name}</span>
-                          <span className="text-[#6C757D]">${cat.total.toFixed(2)}</span>
+                          <span className="text-[#6C757D]">{formatRWF(cat.total)}</span>
                         </div>
                         <div className="w-full bg-[#DEE2E6] rounded-full h-1.5">
                           <div

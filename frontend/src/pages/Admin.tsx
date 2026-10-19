@@ -8,10 +8,9 @@ import SummaryCard from '../components/SummaryCard';
 import StatCard    from '../components/StatCard';
 import { adminApi, type InsightsResponse } from '../api/admin.api';
 import { getErrorMessage } from '../api/axios';
-import { formatDate } from '../utils/budgetUtils';
+import { formatDate, formatRWF } from '../utils/budgetUtils';
 
-const fmtCurrency = (n: number) =>
-  n.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 });
+const fmtCurrency = (n: number) => formatRWF(n);
 
 export default function Admin() {
   const [data,    setData]    = useState<InsightsResponse | null>(null);
@@ -94,7 +93,7 @@ export default function Admin() {
                           <XAxis
                             type="number"
                             tick={{ fontSize: 11, fill: '#6C757D' }}
-                            tickFormatter={(v: number) => `$${v.toLocaleString()}`}
+                            tickFormatter={(v: number) => `${v.toLocaleString()} RWF`}
                             axisLine={false}
                             tickLine={false}
                           />
@@ -233,7 +232,7 @@ export default function Admin() {
                               <td className={tdCls}>{exp.category?.name ?? 'Uncategorized'}</td>
                               <td className={tdCls}>{exp.user.name}</td>
                               <td className="px-4 py-3 text-sm text-right font-semibold text-[#DC3545]">
-                                ${parseFloat(exp.amount).toFixed(2)}
+                                {formatRWF(parseFloat(exp.amount))}
                               </td>
                               <td className={tdCls}>{formatDate(exp.createdAt)}</td>
                             </tr>
