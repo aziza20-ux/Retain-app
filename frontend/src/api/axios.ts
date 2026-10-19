@@ -4,7 +4,7 @@ import axios from "axios";
 // Set VITE_API_BASE_URL=http://localhost:3001/api in frontend/.env
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL ?? "http://localhost:3001/api",
-  timeout: 10000,
+  timeout: 180000,
   headers: { "Content-Type": "application/json" },
 });
 
