@@ -691,3 +691,7 @@ Run `npm run seed` from the `backend` directory before starting the application.
 The backend uses `--experimental-strip-types` to run TypeScript-annotated `.js` files directly. This flag requires **Node.js 22.6 or later**. If you see an error about an unrecognized flag, upgrade Node.js.
 
 ---
+
+## Live Demo
+
+**Retain App:** https://retain-app-ten.vercel.app/
